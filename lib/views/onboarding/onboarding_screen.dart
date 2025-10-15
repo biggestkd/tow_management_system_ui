@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tow_management_system_ui/views/onboarding/step_confirmation.dart';
 
+import '../../controllers/onboarding_controller.dart';
 import '../../models/account.dart';
 
 /// --- Step widgets (defined below) ---
@@ -17,7 +18,7 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  // 0 = Auth, 1 = Company, 2 = Review
+
   int _currentStep = 0;
   bool _loading = false;
   String? _error;
@@ -148,14 +149,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           emailController: emailCtrl,
           passwordController: passwordCtrl,
           errorText: _error,
-          goToNextStep: _goToStep,
+          goToNextStep: (int step) async => {
+            _idToken = await OnboardingController.signUpWithEmailAndPassword(emailCtrl.text, passwordCtrl.text),
+            _goToStep(step)
+          },
         );
 
       case 1:
         return StepConfirmation(
           confirmationCodeController: confirmationCtrl,
-          goToNextStep: _goToStep,
           errorText: _error,
+          goToNextStep: (int step) async => {
+            await OnboardingController.validateConfirmationCode(_idToken, confirmationCtrl.text, emailCtrl.text, passwordCtrl.text),
+            _goToStep(step)
+          },
         );
 
       case 2:

@@ -1,4 +1,11 @@
 # Change Log
 
-## X.x.X
-* Installed packages: amplify_flutter, amplify_auth_cognito, flutter_riverpod, go_router, dio, intl
+## 1.0.0
+* Initialized project structure
+* Created onboarding flow (views, controller, models)
+* Added placeholder screen for dashboard
+* Installed amplify_flutter (16.2.4)
+* Installed amplify_auth_cognito (2.7.0)
+* Installed amplify_authenticator (2.3.8)
+* Installed go_router (16.2.4)
+* Installed intl (0.20.2)

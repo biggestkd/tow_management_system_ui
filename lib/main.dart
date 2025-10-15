@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tow_management_system_ui/router.dart';
 
+import 'amplify_initializer.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await configureAmplify();
   runApp(const MyApp());
 }
 
