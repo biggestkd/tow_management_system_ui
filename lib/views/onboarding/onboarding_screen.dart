@@ -153,6 +153,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             _idToken = await OnboardingController.signUpWithEmailAndPassword(emailCtrl.text, passwordCtrl.text),
             _goToStep(step)
           },
+          goToPrevious: _goToStep,
         );
 
       case 1:
@@ -163,6 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             await OnboardingController.validateConfirmationCode(_idToken, confirmationCtrl.text, emailCtrl.text, passwordCtrl.text),
             _goToStep(step)
           },
+          goToPrevious: _goToStep,
         );
 
       case 2:
@@ -172,7 +174,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           websiteController: websiteCtrl,
           addressController: addressCtrl,
           loading: _loading,
-          goToNextStep: _goToStep,
+          goToNextStep: (int step) async {
+            await OnboardingController.completeAccountCreation(_idToken, companyNameCtrl.text, phoneCtrl.text, addressCtrl.text,);
+            _goToStep(step);
+            if (!context.mounted) return;
+            context.go('/dashboard');
+          },
+          goToPrevious: _goToStep,
           errorText: _error,
         );
 

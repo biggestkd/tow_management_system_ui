@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.0
+* Updated amplify config
+* Updated onboarding controller to call user/company APIs
+* Updated Company/User models
+* Add service configuration for API details
+* Create CompanyAPI and UserAPI services
+* Update onboarding screens
+
 ## 1.0.0
 * Initialized project structure
 * Created onboarding flow (views, controller, models)

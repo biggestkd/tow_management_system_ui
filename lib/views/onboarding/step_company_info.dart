@@ -12,7 +12,7 @@ class StepCompanyInfo extends StatelessWidget {
     required this.loading,
     required this.errorText,
     required this.goToNextStep,
-
+    required this.goToPrevious,
   });
 
   final TextEditingController companyNameController;
@@ -20,6 +20,7 @@ class StepCompanyInfo extends StatelessWidget {
   final TextEditingController websiteController;
   final TextEditingController addressController;
   final void Function(int) goToNextStep;
+  final void Function(int) goToPrevious;
 
   final bool loading;
   final String? errorText;
@@ -57,6 +58,7 @@ class StepCompanyInfo extends StatelessWidget {
           maxLines: 4,
         ),
         const SizedBox(height: 48),
+
         // Footer actions
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -64,14 +66,14 @@ class StepCompanyInfo extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: loading ? null : () => goToNextStep(1),
+                  onPressed: loading ? null : () => goToPrevious(0),
                   child: const Text('Back'),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton(
-                  onPressed: () => { context.go('/dashboard') },
+                  onPressed: loading ? null : () => goToNextStep(1),
                   child: loading
                       ? const SizedBox(
                     height: 20,
@@ -83,10 +85,8 @@ class StepCompanyInfo extends StatelessWidget {
               ),
             ],
           ),
-        )
-
+        ),
       ],
     );
   }
-
 }
