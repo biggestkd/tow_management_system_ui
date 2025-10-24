@@ -1,4 +1,4 @@
-// lib/screens/onboarding/step_auth.dart
+// lib/screens/onboarding/step_confirmation.dart
 import 'package:flutter/material.dart';
 import '../../utilities/validator.dart';
 
@@ -8,14 +8,14 @@ class StepConfirmation extends StatelessWidget {
     required this.confirmationCodeController,
     required this.errorText,
     required this.goToNextStep,
-
+    required this.goToPrevious,
   });
 
   final TextEditingController confirmationCodeController;
   final String? errorText;
   final void Function(int) goToNextStep;
+  final void Function(int) goToPrevious;
   final bool loading = false;
-
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +31,7 @@ class StepConfirmation extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 48),
+
         // Footer actions
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -38,7 +39,7 @@ class StepConfirmation extends StatelessWidget {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: loading ? null : () => goToNextStep(0),
+                  onPressed: loading ? null : () => goToPrevious(0),
                   child: const Text('Back'),
                 ),
               ),
@@ -57,10 +58,8 @@ class StepConfirmation extends StatelessWidget {
               ),
             ],
           ),
-        )
-
+        ),
       ],
     );
   }
-
 }

@@ -1,25 +1,25 @@
 class User {
   final String id;
-  final String username;
-  final String accountId;
+  final String? username;
+  final String? companyId;
 
   User({
-    required this.id,
-    required this.username,
-    required this.accountId,
+    required this.id, // only required field
+    this.username,
+    this.companyId,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? '',
-      username: json['username'] ?? '',
-      accountId: json['accountId'] ?? '',
+      username: json['username'],
+      companyId: json['companyId'],
     );
   }
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'username': username,
-    'accountId': accountId,
+    if (username != null) 'username': username,
+    if (companyId != null) 'companyId': companyId,
   };
 }

@@ -3,27 +3,26 @@ import 'package:flutter/material.dart';
 import '../../utilities/validator.dart';
 
 class StepAuth extends StatelessWidget {
-
   StepAuth({
     super.key,
     required this.emailController,
     required this.passwordController,
     required this.errorText,
     required this.goToNextStep,
+    required this.goToPrevious,
   });
 
   final TextEditingController emailController;
   final TextEditingController passwordController;
   final String? errorText;
   final void Function(int) goToNextStep;
+  final void Function(int) goToPrevious;
+
   bool obscure = true;
   bool loading = false;
 
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -45,10 +44,6 @@ class StepAuth extends StatelessWidget {
           decoration: InputDecoration(
             labelText: 'Password',
             hintText: 'Minimum 8 characters',
-            suffixIcon: IconButton(
-              onPressed: () => obscure = !obscure,
-              icon: Icon(obscure ? Icons.visibility : Icons.visibility_off),
-            ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           obscureText: obscure,
@@ -56,6 +51,7 @@ class StepAuth extends StatelessWidget {
           validator: (v) => validatePassword(v, min: 8),
         ),
         const SizedBox(height: 48),
+
         // Footer actions
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -63,34 +59,28 @@ class StepAuth extends StatelessWidget {
             children: [
               Expanded(
                 child:
-                OutlinedButton(
-                  onPressed: null,
-                  child: const Text('Back'),
-                ),
+                  OutlinedButton(
+                    onPressed: null,
+                    child: const Text('Back'),
+                  ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child:
-                ElevatedButton(
-                  onPressed: () => { goToNextStep(1) },
-                  child:
-                  loading ?
-                  const SizedBox(
+                child: ElevatedButton(
+                  onPressed: () => goToNextStep(1),
+                  child: loading
+                      ? const SizedBox(
                     height: 20,
                     width: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  ) : Text('Continue'),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                      : const Text('Continue'),
                 ),
               ),
             ],
           ),
         ),
-
       ],
     );
   }
-
-
 }

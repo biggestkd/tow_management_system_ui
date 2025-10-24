@@ -1,6 +1,9 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:tow_management_system_ui/models/company.dart';
 import 'package:tow_management_system_ui/models/user.dart';
+import 'package:tow_management_system_ui/services/company_api_service.dart';
+import 'package:tow_management_system_ui/services/user_api_service.dart';
 
 class OnboardingController {
 
@@ -36,8 +39,12 @@ class OnboardingController {
 
       await Amplify.Auth.signIn(username: email, password: password);
 
-      // Create the user account here by hitting UserApi.create(userId, email)
+      // Create new user
+      final user = User(id: userId, username: email);
 
+      // Create the user account
+      await UserAPI.createUser(user);
+      
     } on AuthException catch (e) {
       safePrint('Error confirming user: ${e.message}');
     }
@@ -46,20 +53,18 @@ class OnboardingController {
   /// Attempts to create a new Tow Pro account using the onboarding information and
   /// create a new user account using the userId from identity provider and newly
   static Future<User?> completeAccountCreation(userId, companyName, phone, address) async {
-    // CompanyApi.create
-    // Create account for the company with the company name
-    // Create a user account using the current information
-    // Should the UI care what is being done in the background to create the account? No
-    // UI wants to share the form information and expects an account id to be returned
-    // This controller especially is not concerned with the business logic
-    // This is an API design consideration. Should APIs be doing multiple things? Should
-    // the account API update something with the user API
-    // What happens if the client is in an area with low bandwidth? 2 steps and seperate APIs
-    // will lead to multiple
-    // User API is different than the
-    // Company API
-    // let the controller be responsible for doing both 1. Create the Account and wait for a response
-    // 2. Create a new User with the account ID, email, username,
+    // Create company
+    final company = Company(companyName: companyName, phoneNumber: phone, street: address);
+    
+    // Send company details to backend
+    var createdCompany = await CompanyAPI.createCompany(company);
+    
+    // Create user update
+    final user = User(id: userId, companyId: createdCompany?.id);
+    
+    // Update user with company id
+    UserAPI.updateUser(user);
+    
   }
 
 
