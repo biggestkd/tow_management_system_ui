@@ -20,16 +20,43 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // ----- State owned by the Dashboard -----
+
   User? _user;
   Company? _company;
-
-  // Example metrics/state you can wire to your API
   int _activeCount = 0;
   int _completedToday = 0;
   double _totalRevenue = 0;
   final List<Tow> _activeTows = const [];
-  final List<Tow> _towHistory = const [];
+  final List<Tow> _towHistory = [
+    Tow(
+      id: 'tow_001',
+      destination: "Mike's Auto Repair, 5678 Oak Avenue, Riverside, CA 92501",
+      pickup: '1234 Main Street, Downtown, CA 90210',
+      vehicle: '2019 Honda Accord',
+      primaryContact: 'Sarah Johnson',
+      attachments: const [],
+      notes: "Vehicle won't start. Battery appears dead.",
+      history: const ['Created', 'Driver Assigned'],
+      status: 'Active',
+      checkoutUrl: 'https://withtowpro.com/checkout/tow_001',
+      createdAt: DateTime(2025, 10, 13, 11, 18),
+      price: 125.00,
+    ),
+    Tow(
+      id: 'tow_001',
+      destination: "Mike's Auto Repair, 5678 Oak Avenue, Riverside, CA 92501",
+      pickup: '1234 Main Street, Downtown, CA 90210',
+      vehicle: '2019 Honda Accord',
+      primaryContact: 'Sarah Johnson',
+      attachments: const [],
+      notes: "Vehicle won't start. Battery appears dead.",
+      history: const ['Created', 'Driver Assigned'],
+      status: 'Completed',
+      checkoutUrl: 'https://withtowpro.com/checkout/tow_001',
+      createdAt: DateTime(2025, 10, 13, 11, 18),
+      price: 125.00,
+    ),
+  ];
 
   bool _loading = true;
   String? _error;
@@ -42,6 +69,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _bootstrap() async {
     try {
+
+      // TODO: update these value from the controller
+
       final user = User(
         id: 'uid_123',
         username: 'kdowdy',
@@ -108,6 +138,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     // TODO: Amplify.Auth.signOut(); then context.go('/login')
                   },
                 ),
+              ),
+              SliverToBoxAdapter(
+                child: SizedBox(height: 16),
               ),
               SliverToBoxAdapter(
                 child: Padding(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tow_management_system_ui/views/dashboard/tow_card.dart';
 import '../../models/company.dart';
 import '../../models/tow.dart';
 
@@ -21,64 +22,44 @@ class TowsSection extends StatefulWidget {
 }
 
 class _TowsSectionState extends State<TowsSection> {
-  int _tabIndex = 0;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isEmpty = (_tabIndex == 0 && widget.activeTows.isEmpty) ||
-        (_tabIndex == 1 && widget.towHistory.isEmpty);
+    final historyLen = widget.towHistory.length;
+    final isEmpty = historyLen == 0;
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Tabs
-            SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 0, label: Text('Active Tows (0)')),
-                ButtonSegment(value: 1, label: Text('Tow History (0)')),
-              ],
-              selected: {_tabIndex},
-              onSelectionChanged: (s) =>
-                  setState(() => _tabIndex = s.first),
-            ),
-            const SizedBox(height: 20),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 16),
 
-            if (isEmpty) _EmptyState(onOpenSchedule: widget.onOpenSchedule),
-
-            if (!isEmpty)
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: _tabIndex == 0
-                    ? widget.activeTows.length
-                    : widget.towHistory.length,
-                separatorBuilder: (_, __) => const Divider(height: 1),
-                itemBuilder: (context, i) {
-                  final tow = _tabIndex == 0
-                      ? widget.activeTows[i]
-                      : widget.towHistory[i];
-                  return ListTile(
-                    leading: const Icon(Icons.local_shipping_outlined),
-                    title: Text(tow.vehicle ?? 'Tow ${tow.id}'),
-                    subtitle: Text(
-                        '${tow.status.toUpperCase()} • ${tow.createdAt}'),
-                    trailing: Text(tow.price == null
-                        ? ''
-                        : '\$${tow.price!.toStringAsFixed(2)}'),
-                    onTap: () {
-                      // TODO: go to tow detail
-                    },
-                  );
+        if (isEmpty)
+          _EmptyState(onOpenSchedule: widget.onOpenSchedule)
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: historyLen,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, i) {
+              final tow = widget.towHistory[i];
+              return TowCard(
+                status: tow.status,
+                createdAt: tow.createdAt ?? DateTime.now(),
+                price: tow.price,
+                pickupLocation: tow.pickup,
+                dropOffLocation: tow.destination,
+                vehicle: tow.vehicle,
+                driverName: tow.primaryContact,
+                driverPhone: null,
+                notes: tow.notes,
+                onEdit: () {
+                  // TODO: navigate to edit
                 },
-              ),
-          ],
-        ),
-      ),
+              );
+            },
+          ),
+      ],
     );
   }
 }
@@ -90,27 +71,49 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 32),
-      child: Column(
-        children: [
-          Icon(Icons.local_shipping_outlined,
-              size: 48, color: theme.colorScheme.onSurfaceVariant),
-          const SizedBox(height: 12),
-          Text('No Active Tows', style: theme.textTheme.titleMedium),
-          const SizedBox(height: 6),
-          Text(
-            'Share your scheduling link to start receiving tow requests',
-            style: theme.textTheme.bodySmall,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onOpenSchedule,
-            icon: const Icon(Icons.link),
-            label: const Text('View Schedule Link'),
-          ),
-        ],
+      child: SizedBox(
+        width: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.local_shipping_outlined,
+              size: 52,
+              color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'No Active Tows',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Share your scheduling link to start receiving tow requests',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.8),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: onOpenSchedule,
+              icon: const Icon(Icons.link),
+              label: const Text('View Schedule Link'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                textStyle: theme.textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

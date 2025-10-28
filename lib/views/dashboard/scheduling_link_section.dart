@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:tow_management_system_ui/colors.dart';
 import '../../models/company.dart';
 
 class SchedulingLinkSection extends StatelessWidget {
@@ -21,16 +21,18 @@ class SchedulingLinkSection extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest,
+      color: AppColors.pressed,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Your Scheduling Link',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              'Your Scheduling Link',
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 6),
             Text(
               'Share this link with drivers and customers to schedule tows',
@@ -44,11 +46,31 @@ class SchedulingLinkSection extends StatelessWidget {
                     readOnly: true,
                     controller: TextEditingController(text: link ?? ''),
                     decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
                       isDense: true,
                       prefixIcon: const Icon(Icons.link),
                       hintText: 'No link available',
+                      hintStyle:
+                      theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Colors.grey.shade300,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: theme.colorScheme.primary,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),

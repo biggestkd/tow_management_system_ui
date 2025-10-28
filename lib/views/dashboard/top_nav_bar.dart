@@ -25,30 +25,38 @@ class TopNavBar extends StatelessWidget {
     final status = companyActive ? 'Active' : 'Inactive';
 
     return Material(
-      color: theme.colorScheme.surface,
+      color: Colors.white,
+      elevation: 1,
+      shadowColor: Colors.black.withOpacity(0.05),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 12, 8),
         child: Row(
           children: [
-            // App / Company
+            // App / Company info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(appName,
-                      style: theme.textTheme.titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w600)),
+                  Text(
+                    appName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 2),
                   Row(
                     children: [
                       Text(
                         companyName,
-                        style: theme.textTheme.bodyMedium,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.black87,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       Container(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
                           color: companyActive
                               ? theme.colorScheme.primary.withOpacity(.1)
@@ -75,10 +83,12 @@ class TopNavBar extends StatelessWidget {
             PopupMenuButton<String>(
               icon: CircleAvatar(
                 radius: 16,
+                backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
                 child: Text(
-                  (user.displayName ?? user.username)
-                      !.substring(0, 1)
+                  (user.displayName ?? user.username)!
+                      .substring(0, 1)
                       .toUpperCase(),
+                  style: const TextStyle(color: Colors.black87),
                 ),
               ),
               itemBuilder: (_) => [
