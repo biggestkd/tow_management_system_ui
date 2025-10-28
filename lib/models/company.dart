@@ -1,38 +1,43 @@
 class Company {
   final String? id;
-  final String companyName;
+  final String name;
   final String? website;
-  final String? status;
+  final bool? active;
   final String? street;
   final String? city;
   final String? zipCode;
   final String? state;
   final String? phoneNumber;
+  final String? schedulingLink;
 
   Company({
     this.id,
-    required this.companyName,
+    required this.name,
     this.website,
-    this.status,
+    this.active,
     this.street,
     this.city,
     this.zipCode,
     this.state,
     this.phoneNumber,
+    this.schedulingLink,
   });
 
   /// Factory method to create a Company from JSON
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(
       id: json['_id'] ?? json['id'],
-      companyName: json['companyName'] ?? '',
+      name: json['name'] ?? json['companyName'] ?? '',
       website: json['website'],
-      status: json['status'],
+      active: json['active'] is bool
+          ? json['active']
+          : json['active'] == 'true' || json['active'] == 1,
       street: json['street'],
       city: json['city'],
       zipCode: json['zipCode'],
       state: json['state'],
       phoneNumber: json['phoneNumber'],
+      schedulingLink: json['schedulingLink'],
     );
   }
 
@@ -40,19 +45,20 @@ class Company {
   Map<String, dynamic> toJson() {
     return {
       if (id != null) 'id': id,
-      'companyName': companyName,
+      'name': name,
       if (website != null) 'website': website,
-      if (status != null) 'status': status,
+      if (active != null) 'active': active,
       if (street != null) 'street': street,
       if (city != null) 'city': city,
       if (zipCode != null) 'zipCode': zipCode,
       if (state != null) 'state': state,
       if (phoneNumber != null) 'phoneNumber': phoneNumber,
+      if (schedulingLink != null) 'schedulingLink': schedulingLink,
     };
   }
 
   @override
   String toString() {
-    return 'Company(companyName: $companyName, city: $city, state: $state, status: $status)';
+    return 'Company(name: $name, city: $city, state: $state, active: $active)';
   }
 }
