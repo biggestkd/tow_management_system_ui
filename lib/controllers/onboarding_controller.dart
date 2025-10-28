@@ -54,7 +54,7 @@ class OnboardingController {
   /// create a new user account using the userId from identity provider and newly
   static Future<User?> completeAccountCreation(userId, companyName, phone, address) async {
     // Create company
-    final company = Company(companyName: companyName, phoneNumber: phone, street: address);
+    final company = Company(name: companyName, phoneNumber: phone, street: address);
     
     // Send company details to backend
     var createdCompany = await CompanyAPI.createCompany(company);
