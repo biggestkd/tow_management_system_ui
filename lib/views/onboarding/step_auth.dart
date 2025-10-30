@@ -10,6 +10,9 @@ class StepAuth extends StatelessWidget {
     required this.errorText,
     required this.goToNextStep,
     required this.goToPrevious,
+    required this.firstNameController,
+    required this.lastNameController,
+
   });
 
   final TextEditingController emailController;
@@ -17,6 +20,8 @@ class StepAuth extends StatelessWidget {
   final String? errorText;
   final void Function(int) goToNextStep;
   final void Function(int) goToPrevious;
+  final TextEditingController firstNameController;
+  final TextEditingController lastNameController;
 
   bool obscure = true;
   bool loading = false;
@@ -48,7 +53,27 @@ class StepAuth extends StatelessWidget {
           ),
           obscureText: obscure,
           textInputAction: TextInputAction.done,
+          validator: (v) => validatePassword(v, min: 2),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: firstNameController,
+          decoration: InputDecoration(
+            labelText: 'First Name',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          textInputAction: TextInputAction.done,
           validator: (v) => validatePassword(v, min: 8),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: lastNameController,
+          decoration: InputDecoration(
+            labelText: 'Last Name',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          textInputAction: TextInputAction.done,
+          validator: (v) => validatePassword(v, min: 2),
         ),
         const SizedBox(height: 48),
 

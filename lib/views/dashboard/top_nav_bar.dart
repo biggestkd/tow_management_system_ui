@@ -85,7 +85,7 @@ class TopNavBar extends StatelessWidget {
                 radius: 16,
                 backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
                 child: Text(
-                  (user.displayName ?? user.username)!
+                  (user.firstName ?? user.email)!
                       .substring(0, 1)
                       .toUpperCase(),
                   style: const TextStyle(color: Colors.black87),

@@ -29,7 +29,7 @@ class OnboardingController {
 
   /// Attempts to finalize account creation with identity provider
   /// and sign in the user with valid credentials
-  static Future<void> validateConfirmationCode(userId, confirmationCode, email, password) async {
+  static Future<void> validateConfirmationCode(userId, confirmationCode, email, password, firstName, lastName) async {
     try {
 
       await Amplify.Auth.confirmSignUp(
@@ -40,7 +40,7 @@ class OnboardingController {
       await Amplify.Auth.signIn(username: email, password: password);
 
       // Create new user
-      final user = User(id: userId, username: email);
+      final user = User(id: userId, email: email, firstName: firstName, lastName: lastName);
 
       // Create the user account
       await UserAPI.createUser(user);

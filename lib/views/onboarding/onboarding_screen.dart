@@ -23,7 +23,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _loading = false;
   String? _error;
 
-  // Single source of truth: controllers live in parent
   final emailCtrl = TextEditingController();
   final passwordCtrl = TextEditingController();
   final companyNameCtrl = TextEditingController();
@@ -31,9 +30,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final websiteCtrl = TextEditingController();
   final addressCtrl = TextEditingController();
   final confirmationCtrl = TextEditingController();
+  final firstNameCtrl = TextEditingController();
+  final lastNameCtrl = TextEditingController();
 
   String? _idToken;
-  Account? _account;
 
   static const _bg = Color(0xFFF5F7FB);
 
@@ -45,6 +45,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     phoneCtrl.dispose();
     websiteCtrl.dispose();
     addressCtrl.dispose();
+    confirmationCtrl.dispose();
+    firstNameCtrl.dispose();
+    lastNameCtrl.dispose();
     super.dispose();
   }
 
@@ -148,6 +151,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         return StepAuth(
           emailController: emailCtrl,
           passwordController: passwordCtrl,
+          firstNameController: firstNameCtrl,
+          lastNameController: lastNameCtrl,
           errorText: _error,
           goToNextStep: (int step) async => {
             _idToken = await OnboardingController.signUpWithEmailAndPassword(emailCtrl.text, passwordCtrl.text),
@@ -161,7 +166,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           confirmationCodeController: confirmationCtrl,
           errorText: _error,
           goToNextStep: (int step) async => {
-            await OnboardingController.validateConfirmationCode(_idToken, confirmationCtrl.text, emailCtrl.text, passwordCtrl.text),
+            await OnboardingController.validateConfirmationCode(_idToken, confirmationCtrl.text, emailCtrl.text, passwordCtrl.text, firstNameCtrl.text, lastNameCtrl.text),
             _goToStep(step)
           },
           goToPrevious: _goToStep,
