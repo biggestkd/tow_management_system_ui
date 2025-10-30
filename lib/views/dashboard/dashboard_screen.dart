@@ -8,6 +8,7 @@ import 'package:tow_management_system_ui/views/dashboard/scheduling_link_section
 import 'package:tow_management_system_ui/views/dashboard/top_nav_bar.dart';
 import 'package:tow_management_system_ui/views/dashboard/tow_section.dart';
 
+import '../../controllers/dashboard_controller.dart';
 import '../../models/company.dart';
 import '../../models/tow.dart';
 import 'metrics_section.dart';
@@ -70,22 +71,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _bootstrap() async {
     try {
 
-      // TODO: update these value from the controller
+      final user = await DashboardController.loadUser();
 
-      final user = User(
-        id: 'uid_123',
-        username: 'kdowdy',
-        displayName: 'Kevin Dowdy',
-        avatarUrl: null,
-      );
-
-      // Company for this user
-      final company = Company(
-        id: 'cmp_1',
-        name: 'Kommunity Works LLC',
-        active: false, // matches "Inactive" in your mock
-        schedulingLink: 'kommunity-works-llc',
-      );
+      // Load company referenced by user
+      final company = await DashboardController.loadCompany(user?.companyId);
 
       // Metrics (example placeholders)
       final activeCount = 0;
@@ -129,7 +118,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: TopNavBar(
                   appName: 'Tow Pro',
                   companyName: _company?.name ?? '',
-                  companyActive: _company?.active ?? false,
+                  companyActive: _company?.status ?? '',
                   user: _user!,
                   onAccountPressed: () {
                     // TODO: go_router to /account
