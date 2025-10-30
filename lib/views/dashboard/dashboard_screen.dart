@@ -1,8 +1,5 @@
 // lib/screens/onboarding/onboarding_screen.dart
-import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
-import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:tow_management_system_ui/colors.dart';
 import 'package:tow_management_system_ui/models/user.dart';
 import 'package:tow_management_system_ui/views/dashboard/scheduling_link_section.dart';
 import 'package:tow_management_system_ui/views/dashboard/top_nav_bar.dart';
@@ -70,18 +67,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _bootstrap() async {
     try {
-
       final user = await DashboardController.loadUser();
 
       // Load company referenced by user
       final company = await DashboardController.loadCompany(user?.companyId);
 
-      // Metrics (example placeholders)
-      final activeCount = 0;
-      final completedToday = 0;
-      final totalRevenue = 0.0;
+      // Load metrics (list)
+      final metrics = await DashboardController.loadMetrics(user?.companyId);
 
-      // Tows
+      final String? vActive   = (metrics != null && metrics.isNotEmpty) ? metrics[0].value : null;
+      final String? vCompleted= (metrics != null && metrics.length > 1) ? metrics[1].value : null;
+      final String? vRevenue  = (metrics != null && metrics.length > 2) ? metrics[2].value : null;
+
+      final int activeCount      = int.tryParse(vActive ?? '') ?? 0;
+      final int completedToday   = int.tryParse(vCompleted ?? '') ?? 0;
+      final double totalRevenue  = double.tryParse(vRevenue ?? '') ?? 0.0;
+
+      // Load tow history
       final activeTows = <Tow>[];
       final towHistory = <Tow>[];
 

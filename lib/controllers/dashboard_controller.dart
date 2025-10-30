@@ -5,6 +5,9 @@ import 'package:tow_management_system_ui/models/user.dart';
 import 'package:tow_management_system_ui/services/company_api_service.dart';
 import 'package:tow_management_system_ui/services/user_api_service.dart';
 
+import '../models/metric.dart';
+import '../services/metric_api.dart';
+
 class DashboardController {
 
   /// Attempts to grab the current user's from Amplify
@@ -49,10 +52,28 @@ class DashboardController {
     }
   }
 
-  // load data
-  // activeTows, completedTows, payoutAmount
+  /// Loads metrics for a specific company
+  static Future<List<Metric>?> loadMetrics(String? companyId) async {
+    if (companyId == null || companyId.isEmpty) {
+      debugPrint("No companyId provided to loadMetrics.");
+      return null;
+    }
 
-  // getTowHistory
+    try {
+      debugPrint("Loading metrics for company ID: $companyId");
+      final metrics = await MetricsAPI.getMetricsForCompany(companyId);
 
+      if (metrics != null && metrics.isNotEmpty) {
+        debugPrint("Metrics loaded successfully (${metrics.length} records).");
+      } else {
+        debugPrint("No metrics found for company ID: $companyId");
+      }
+
+      return metrics;
+    } catch (e) {
+      debugPrint("Error loading metrics: $e");
+      return null;
+    }
+  }
 
 }
