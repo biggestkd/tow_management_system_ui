@@ -5,14 +5,19 @@ import 'package:tow_management_system_ui/models/user.dart';
 import 'package:tow_management_system_ui/services/company_api_service.dart';
 import 'package:tow_management_system_ui/services/user_api_service.dart';
 
+import '../models/metric.dart';
+import '../models/tow.dart';
+import '../services/metric_api.dart';
+import '../services/tow_api.dart';
+
 class DashboardController {
 
   /// Attempts to grab the current user's from Amplify
-  static Future<User?> loadSignedIn() async {
+  static Future<User?> loadUser() async {
     try {
       var authUser = await Amplify.Auth.getCurrentUser();
 
-      var user = User(id: authUser.userId); // TODO: replace this line with a call to the USer API to get the user data
+      var user = UserAPI.getUser(authUser.userId);
 
       return user;
 
@@ -25,10 +30,75 @@ class DashboardController {
     }
   }
 
-  // load data
-  // activeTows, completedTows, payoutAmount
+  /// Loads a Company by its ID using the CompanyAPI
+  static Future<Company?> loadCompany(String? companyId) async {
+    if (companyId == null || companyId.isEmpty) {
+      debugPrint("No companyId provided to loadCompany.");
+      return null;
+    }
 
-  // getTowHistory
+    try {
+      debugPrint("Loading company with ID: $companyId");
+      final company = await CompanyAPI.getCompanyById(companyId);
 
+      if (company != null) {
+        debugPrint("Company loaded successfully: ${company.name}");
+      } else {
+        debugPrint("Company not found or failed to load.");
+      }
 
+      return company;
+    } catch (e) {
+      debugPrint("Error loading company: $e");
+      return null;
+    }
+  }
+
+  /// Loads metrics for a specific company
+  static Future<List<Metric>?> loadMetrics(String? companyId) async {
+    if (companyId == null || companyId.isEmpty) {
+      debugPrint("No companyId provided to loadMetrics.");
+      return null;
+    }
+
+    try {
+      debugPrint("Loading metrics for company ID: $companyId");
+      final metrics = await MetricsAPI.getMetricsForCompany(companyId);
+
+      if (metrics != null && metrics.isNotEmpty) {
+        debugPrint("Metrics loaded successfully (${metrics.length} records).");
+      } else {
+        debugPrint("No metrics found for company ID: $companyId");
+      }
+
+      return metrics;
+    } catch (e) {
+      debugPrint("Error loading metrics: $e");
+      return null;
+    }
+  }
+
+  /// Loads tow history for a specific company
+  static Future<List<Tow>?> loadTowHistory(String? companyId) async {
+    if (companyId == null || companyId.isEmpty) {
+      debugPrint("No companyId provided to loadTowHistory.");
+      return null;
+    }
+
+    try {
+      debugPrint("Loading tow history for company ID: $companyId");
+      final tows = await TowAPI.getTowsByCompanyId(companyId);
+
+      if (tows != null && tows.isNotEmpty) {
+        debugPrint("Loaded ${tows.length} tows for company ID: $companyId");
+      } else {
+        debugPrint("No tows found for company ID: $companyId");
+      }
+
+      return tows;
+    } catch (e) {
+      debugPrint("Error loading tow history: $e");
+      return null;
+    }
+  }
 }

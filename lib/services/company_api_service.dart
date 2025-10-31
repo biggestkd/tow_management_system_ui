@@ -28,4 +28,34 @@ class CompanyAPI {
       return null;
     }
   }
+
+  /// Get a company by its ID
+  static Future<Company?> getCompanyById(String id) async {
+    if (id.isEmpty) {
+      debugPrint("Company ID is required.");
+      return null;
+    }
+
+    final uri = Uri.parse('$baseUrl/$id');
+    debugPrint("Fetching company with ID: $id");
+
+    try {
+      final response = await http.get(uri, headers: {'Content-Type': 'application/json'});
+
+      if (response.statusCode == 200) {
+        final decodedBody = jsonDecode(response.body);
+        return Company.fromJson(decodedBody);
+      } else if (response.statusCode == 404) {
+        debugPrint("Company not found (404).");
+        return null;
+      } else {
+        debugPrint("Failed to fetch company. ${response.statusCode} - ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Error fetching company: $e");
+      return null;
+    }
+  }
+
 }

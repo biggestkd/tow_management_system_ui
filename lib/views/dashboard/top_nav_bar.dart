@@ -14,7 +14,7 @@ class TopNavBar extends StatelessWidget {
 
   final String appName;
   final String companyName;
-  final bool companyActive;
+  final String companyActive;
   final User user;
   final VoidCallback onAccountPressed;
   final VoidCallback onLogoutPressed;
@@ -22,7 +22,7 @@ class TopNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final status = companyActive ? 'Active' : 'Inactive';
+    final status = companyActive == "active" ? 'Active' : 'Inactive';
 
     return Material(
       color: Colors.white,
@@ -58,7 +58,7 @@ class TopNavBar extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: companyActive
+                          color: companyActive == "active"
                               ? theme.colorScheme.primary.withOpacity(.1)
                               : theme.colorScheme.error.withOpacity(.08),
                           borderRadius: BorderRadius.circular(999),
@@ -66,7 +66,7 @@ class TopNavBar extends StatelessWidget {
                         child: Text(
                           status,
                           style: theme.textTheme.labelSmall?.copyWith(
-                            color: companyActive
+                            color: companyActive == "active"
                                 ? theme.colorScheme.primary
                                 : theme.colorScheme.error,
                             fontWeight: FontWeight.w600,
@@ -85,7 +85,7 @@ class TopNavBar extends StatelessWidget {
                 radius: 16,
                 backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
                 child: Text(
-                  (user.displayName ?? user.username)!
+                  (user.firstName ?? user.email)!
                       .substring(0, 1)
                       .toUpperCase(),
                   style: const TextStyle(color: Colors.black87),

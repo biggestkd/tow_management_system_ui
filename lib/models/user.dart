@@ -1,33 +1,41 @@
 class User {
-  final String id;
-  final String? username;
+  final String? id;
   final String? companyId;
-  final String? displayName;
-  final String? avatarUrl;
+  final int? createdDate;
+  final String? firstName;
+  final String? lastName;
+  final String? phone;
+  final String? email;
 
   User({
-    required this.id, // only required field
-    this.username,
+    this.id,
     this.companyId,
-    this.displayName,
-    this.avatarUrl,
+    this.createdDate,
+    this.firstName,
+    this.lastName,
+    this.phone,
+    this.email,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
-      username: json['username'],
+      id: json['id'],
       companyId: json['companyId'],
-      displayName: json['displayName'],
-      avatarUrl: json['avatarUrl'],
+      createdDate: json['createdDate'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      phone: json['phone'],
+      email: json['email'],
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    if (username != null) 'username': username,
+    if (id != null) 'id': id,
     if (companyId != null) 'companyId': companyId,
-    if (displayName != null) 'displayName': displayName,
-    if (avatarUrl != null) 'avatarUrl': avatarUrl,
+    if (createdDate != null) 'createdDate': createdDate,
+    if (firstName != null) 'firstName': firstName,
+    if (lastName != null) 'lastName': lastName,
+    if (phone != null) 'phone': phone,
+    if (email != null) 'email': email,
   };
 }

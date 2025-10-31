@@ -2,7 +2,7 @@ class Company {
   final String? id;
   final String name;
   final String? website;
-  final bool? active;
+  final String? status;
   final String? street;
   final String? city;
   final String? zipCode;
@@ -14,7 +14,7 @@ class Company {
     this.id,
     required this.name,
     this.website,
-    this.active,
+    this.status,
     this.street,
     this.city,
     this.zipCode,
@@ -27,11 +27,9 @@ class Company {
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(
       id: json['_id'] ?? json['id'],
-      name: json['name'] ?? json['companyName'] ?? '',
+      name: json['name'],
       website: json['website'],
-      active: json['active'] is bool
-          ? json['active']
-          : json['active'] == 'true' || json['active'] == 1,
+      status: json['status'],
       street: json['street'],
       city: json['city'],
       zipCode: json['zipCode'],
@@ -47,7 +45,7 @@ class Company {
       if (id != null) 'id': id,
       'name': name,
       if (website != null) 'website': website,
-      if (active != null) 'active': active,
+      if (status != null) 'active': status,
       if (street != null) 'street': street,
       if (city != null) 'city': city,
       if (zipCode != null) 'zipCode': zipCode,
@@ -59,6 +57,6 @@ class Company {
 
   @override
   String toString() {
-    return 'Company(name: $name, city: $city, state: $state, active: $active)';
+    return 'Company(name: $name, city: $city, state: $state, active: $status)';
   }
 }

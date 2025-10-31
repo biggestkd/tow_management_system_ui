@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:tow_management_system_ui/views/dashboard/tow_card.dart';
 import '../../models/company.dart';
 import '../../models/tow.dart';
+import 'tow_card.dart';
 
 class TowsSection extends StatefulWidget {
   const TowsSection({
     super.key,
     required this.company,
-    required this.activeTows,
     required this.towHistory,
     required this.onOpenSchedule,
   });
 
   final Company company;
-  final List<Tow> activeTows;
   final List<Tow> towHistory;
   final VoidCallback onOpenSchedule;
 
@@ -22,7 +20,6 @@ class TowsSection extends StatefulWidget {
 }
 
 class _TowsSectionState extends State<TowsSection> {
-
   @override
   Widget build(BuildContext context) {
     final historyLen = widget.towHistory.length;
@@ -44,18 +41,16 @@ class _TowsSectionState extends State<TowsSection> {
             itemBuilder: (context, i) {
               final tow = widget.towHistory[i];
               return TowCard(
-                status: tow.status,
-                createdAt: tow.createdAt ?? DateTime.now(),
+                status: tow.status ?? '',
+                createdAt: tow.createdAtDate ?? DateTime.now(),
                 price: tow.price,
-                pickupLocation: tow.pickup,
-                dropOffLocation: tow.destination,
-                vehicle: tow.vehicle,
-                driverName: tow.primaryContact,
+                pickupLocation: tow.pickup ?? '',
+                dropOffLocation: tow.destination ?? '',
+                vehicle: tow.vehicle ?? '',
+                driverName: tow.primaryContact ?? '',
                 driverPhone: null,
-                notes: tow.notes,
-                onEdit: () {
-                  // TODO: navigate to edit
-                },
+                notes: tow.notes ?? '',
+                onEdit: () {},
               );
             },
           ),
