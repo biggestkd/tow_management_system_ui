@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 
 class ScheduleTowScreen extends StatefulWidget {
-  const ScheduleTowScreen({super.key});
+  final String companyUrl;
+
+  const ScheduleTowScreen({
+    super.key,
+    required this.companyUrl,
+  });
 
   @override
   State<ScheduleTowScreen> createState() => _ScheduleTowScreenState();
@@ -14,11 +19,12 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
       appBar: AppBar(
         title: const Text('Schedule Tow'),
       ),
-      body: const Center(
-        child: Text('Schedule Tow placeholder'),
+      body: Center(
+        child: Text(
+          'Schedule tow for "${widget.companyUrl}"',
+          style: const TextStyle(fontSize: 18),
+        ),
       ),
     );
   }
 }
-
-

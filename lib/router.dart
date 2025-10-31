@@ -12,6 +12,12 @@ final router = GoRouter(
     GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
     GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
     GoRoute(path: '/account-information', builder: (_, __) => const AccountInformationScreen()),
-    GoRoute(path: '/schedule-tow', builder: (_, __) => const ScheduleTowScreen()),
+    GoRoute(
+      path: '/schedule-tow/:companyUrl',
+      builder: (context, state) {
+        final companyUrl = state.pathParameters['companyUrl'] ?? '';
+        return ScheduleTowScreen(companyUrl: companyUrl);
+      },
+    ),
   ],
 );
