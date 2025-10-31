@@ -111,9 +111,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   child: SchedulingLinkSection(
                     company: _company!,
-                    onCopyPressed: (link) async {
-                      // Clipboard.setData(ClipboardData(text: link));
-                      // Optional: showSnackBar
+                    onCopyPressed: (link) {
+                      DashboardController.copySchedulingLinkToClipboard(link);
                     },
                     onVisitPressed: (link) {
                       // TODO: launchUrlString(link)

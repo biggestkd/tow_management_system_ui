@@ -1,5 +1,6 @@
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tow_management_system_ui/models/company.dart';
 import 'package:tow_management_system_ui/models/user.dart';
 import 'package:tow_management_system_ui/services/company_api_service.dart';
@@ -100,5 +101,10 @@ class DashboardController {
       debugPrint("Error loading tow history: $e");
       return null;
     }
+  }
+
+  /// Copies the provided scheduling link to the system clipboard.
+  static Future<void> copySchedulingLinkToClipboard(String link) async {
+    await Clipboard.setData(ClipboardData(text: '${ApiSettings.domainBaseUrl}/scheduling/$link'));
   }
 }

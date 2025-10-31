@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.4.0
+* Update Dashboard UI
+
 ## 0.3.0
 * Created DashboardScreen UI elements
 * Add placeholder dashboard_controller
