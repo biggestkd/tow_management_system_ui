@@ -11,6 +11,8 @@ import '../models/tow.dart';
 import '../service_configurations.dart';
 import '../services/metric_api.dart';
 import '../services/tow_api.dart';
+import '../router.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class DashboardController {
 
@@ -106,6 +108,23 @@ class DashboardController {
 
   /// Copies the provided scheduling link to the system clipboard.
   static Future<void> copySchedulingLinkToClipboard(String link) async {
-    await Clipboard.setData(ClipboardData(text: '${ApiSettings.domainBaseUrl}/scheduling/$link'));
+    await Clipboard.setData(ClipboardData(text: '${ApiSettings.domainBaseUrl}/schedule-tow/$link'));
+  }
+
+  /// Signs out the current user and navigates to the login screen.
+  static Future<void> logoutUser() async {
+    try {
+      await Amplify.Auth.signOut();
+    } catch (e) {
+      safePrint('Error during sign out: $e');
+    } finally {
+      router.go('/login');
+    }
+  }
+
+  /// Opens the public scheduling page in a new tab/window.
+  static Future<void> navigateToSchedulingPage(String link) async {
+    final url = '${ApiSettings.domainBaseUrl}/schedule-tow/$link';
+    await launchUrlString(url, webOnlyWindowName: '_blank');
   }
 }

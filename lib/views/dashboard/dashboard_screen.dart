@@ -96,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     // TODO: go_router to /account
                   },
                   onLogoutPressed: () async {
-                    // TODO: Amplify.Auth.signOut(); then context.go('/login')
+                      DashboardController.logoutUser();
                   },
                 ),
               ),
@@ -115,7 +115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       DashboardController.copySchedulingLinkToClipboard(link);
                     },
                     onVisitPressed: (link) {
-                      // TODO: launchUrlString(link)
+                      DashboardController.navigateToSchedulingPage(link);
                     },
                   ),
                 ),

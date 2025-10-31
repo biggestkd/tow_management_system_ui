@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tow_management_system_ui/colors.dart';
 import '../../models/company.dart';
+import '../../service_configurations.dart';
 
 class SchedulingLinkSection extends StatelessWidget {
   const SchedulingLinkSection({
@@ -44,7 +45,7 @@ class SchedulingLinkSection extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     readOnly: true,
-                    controller: TextEditingController(text: link ?? ''),
+                    controller: TextEditingController(text: '${ApiSettings.domainBaseUrl}/schedule-tow/$link'),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
