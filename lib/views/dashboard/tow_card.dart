@@ -18,7 +18,7 @@ class TowCard extends StatelessWidget {
 
   final String status;
   final DateTime createdAt;
-  final double? price;
+  final int? price;
   final VoidCallback? onEdit;
 
   final String pickupLocation;

@@ -6,7 +6,9 @@ import 'package:tow_management_system_ui/services/company_api_service.dart';
 import 'package:tow_management_system_ui/services/user_api_service.dart';
 
 import '../models/metric.dart';
+import '../models/tow.dart';
 import '../services/metric_api.dart';
+import '../services/tow_api.dart';
 
 class DashboardController {
 
@@ -76,4 +78,27 @@ class DashboardController {
     }
   }
 
+  /// Loads tow history for a specific company
+  static Future<List<Tow>?> loadTowHistory(String? companyId) async {
+    if (companyId == null || companyId.isEmpty) {
+      debugPrint("No companyId provided to loadTowHistory.");
+      return null;
+    }
+
+    try {
+      debugPrint("Loading tow history for company ID: $companyId");
+      final tows = await TowAPI.getTowsByCompanyId(companyId);
+
+      if (tows != null && tows.isNotEmpty) {
+        debugPrint("Loaded ${tows.length} tows for company ID: $companyId");
+      } else {
+        debugPrint("No tows found for company ID: $companyId");
+      }
+
+      return tows;
+    } catch (e) {
+      debugPrint("Error loading tow history: $e");
+      return null;
+    }
+  }
 }

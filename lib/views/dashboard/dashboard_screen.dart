@@ -24,37 +24,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _activeCount = 0;
   int _completedToday = 0;
   double _totalRevenue = 0;
-  final List<Tow> _activeTows = const [];
-  final List<Tow> _towHistory = [
-    Tow(
-      id: 'tow_001',
-      destination: "Mike's Auto Repair, 5678 Oak Avenue, Riverside, CA 92501",
-      pickup: '1234 Main Street, Downtown, CA 90210',
-      vehicle: '2019 Honda Accord',
-      primaryContact: 'Sarah Johnson',
-      attachments: const [],
-      notes: "Vehicle won't start. Battery appears dead.",
-      history: const ['Created', 'Driver Assigned'],
-      status: 'Active',
-      checkoutUrl: 'https://withtowpro.com/checkout/tow_001',
-      createdAt: DateTime(2025, 10, 13, 11, 18),
-      price: 125.00,
-    ),
-    Tow(
-      id: 'tow_001',
-      destination: "Mike's Auto Repair, 5678 Oak Avenue, Riverside, CA 92501",
-      pickup: '1234 Main Street, Downtown, CA 90210',
-      vehicle: '2019 Honda Accord',
-      primaryContact: 'Sarah Johnson',
-      attachments: const [],
-      notes: "Vehicle won't start. Battery appears dead.",
-      history: const ['Created', 'Driver Assigned'],
-      status: 'Completed',
-      checkoutUrl: 'https://withtowpro.com/checkout/tow_001',
-      createdAt: DateTime(2025, 10, 13, 11, 18),
-      price: 125.00,
-    ),
-  ];
+  List<Tow> _towHistory = [];
 
   bool _loading = true;
   String? _error;
@@ -84,8 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final double totalRevenue  = double.tryParse(vRevenue ?? '') ?? 0.0;
 
       // Load tow history
-      final activeTows = <Tow>[];
-      final towHistory = <Tow>[];
+      final towHistory = await DashboardController.loadTowHistory(user?.companyId);
 
       setState(() {
         _user = user;
@@ -93,6 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _activeCount = activeCount;
         _completedToday = completedToday;
         _totalRevenue = totalRevenue;
+        _towHistory = towHistory!;
         _loading = false;
         _error = null;
       });
@@ -172,7 +142,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   child: TowsSection(
                     company: _company!,
-                    activeTows: _activeTows,
                     towHistory: _towHistory,
                     onOpenSchedule: () {
                       final link = _company!.schedulingLink;
