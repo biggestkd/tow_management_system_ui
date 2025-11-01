@@ -6,7 +6,7 @@ class TowCard extends StatelessWidget {
     required this.status,
     required this.createdAt,
     this.price,
-    this.onEdit,
+    this.onEditPressed,
 
     required this.pickupLocation,
     required this.dropOffLocation,
@@ -19,7 +19,7 @@ class TowCard extends StatelessWidget {
   final String status;
   final DateTime createdAt;
   final int? price;
-  final VoidCallback? onEdit;
+  final VoidCallback? onEditPressed;
 
   final String pickupLocation;
   final String dropOffLocation;
@@ -87,9 +87,9 @@ class TowCard extends StatelessWidget {
                   const SizedBox(width: 12),
                 ],
                 OutlinedButton.icon(
-                  onPressed: onEdit,
+                  onPressed: onEditPressed,
                   icon: const Icon(Icons.edit, size: 16),
-                  label: const Text('Edit'),
+                  label: const Text('View'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.black87,
                     side: BorderSide(color: Colors.black.withOpacity(.12)),
