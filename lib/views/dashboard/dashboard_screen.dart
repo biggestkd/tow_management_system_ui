@@ -142,11 +142,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: TowsSection(
                     company: _company!,
                     towHistory: _towHistory,
-                    onOpenSchedule: () {
-                      final link = _company!.schedulingLink;
-                      if (link != null) {
-                        // TODO: launchUrlString(link)
-                      }
+                    onOpenBookingLink: () {
+                      DashboardController.navigateToSchedulingPage(_company!.schedulingLink ?? "");
                     },
                   ),
                 ),

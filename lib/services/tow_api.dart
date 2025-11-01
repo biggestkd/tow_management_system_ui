@@ -32,7 +32,7 @@ class TowAPI {
           return decodedBody.map((item) => Tow.fromJson(item)).toList();
         } else {
           debugPrint("Unexpected tow response format.");
-          return null;
+          return [];
         }
       } else if (response.statusCode == 404) {
         debugPrint("No tows found for company (404).");
