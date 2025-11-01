@@ -13,104 +13,105 @@ class SummarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Summary',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+    final amount = tow.price;
+    final amountText =
+    amount == null ? '—' : '\$${amount.toStringAsFixed(2)}';
+
+    final status = (tow.status ?? '').toLowerCase();
+    final isPaid = status == 'paid' || status == 'completed_paid';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.35),
         ),
-        const SizedBox(height: 16),
-        if (tow.createdAtDate != null) ...[
-          _DetailRow(
-            icon: Icons.calendar_today,
-            label: 'Created',
-            value: _formatDate(tow.createdAtDate!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row: title + status chip
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Total',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              _StatusChip(isPaid: isPaid),
+            ],
           ),
-          if (tow.price != null) const SizedBox(height: 12),
-        ],
-        if (tow.price != null)
-          _DetailRow(
-            icon: Icons.attach_money,
-            label: 'Price',
-            value: '\$${tow.price!.toStringAsFixed(2)}',
-            valueStyle: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.primary,
+          const SizedBox(height: 8),
+
+          // Amount
+          Text(
+            amountText,
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: Colors.black87,
+              height: 1.2,
             ),
           ),
-      ],
-    );
-  }
+          const SizedBox(height: 6),
 
-  String _formatDate(DateTime dt) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
-    ];
-    final h12 = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}, $h12:$mm $ampm';
+          // Subtext
+          Text(
+            'Calculated based on your pricing list',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
-class _DetailRow extends StatelessWidget {
-  const _DetailRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-    this.valueStyle,
-  });
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.isPaid});
 
-  final IconData icon;
-  final String label;
-  final String value;
-  final TextStyle? valueStyle;
+  final bool isPaid;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Row(
-      children: [
-        Icon(
-          icon,
-          size: 16,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 8),
-        Text(
-          '$label:',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontWeight: FontWeight.w500,
+    final bg = isPaid
+        ? const Color(0xFFE6F6EA) // soft green
+        : const Color(0xFFFFF3E5); // soft amber
+    final fg = isPaid
+        ? const Color(0xFF177D3F)
+        : const Color(0xFF8A5300);
+    final label = isPaid ? 'Paid' : 'Pending';
+    final icon = isPaid ? Icons.check_circle : Icons.schedule;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: fg.withOpacity(0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: fg),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: fg,
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            value,
-            style: valueStyle ??
-                theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface,
-                ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
-

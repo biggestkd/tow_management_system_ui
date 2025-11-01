@@ -10,47 +10,51 @@ class TopBar extends StatelessWidget {
   final String status;
   final VoidCallback onClose;
 
+  Color _getStatusColor(String status) {
+    final lowerStatus = status.toLowerCase().trim();
+    if (lowerStatus == 'accepted') {
+      return const Color(0xFF16A34A); // Green
+    } else if (lowerStatus == 'pending') {
+      return const Color(0xFF2563EB); // Blue
+    } else if (lowerStatus == 'completed') {
+      return Colors.grey.shade600; // Gray
+    }
+    // Default gray for unknown statuses
+    return Colors.grey.shade600;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final surfaceContainer = theme.colorScheme.surfaceContainerHighest;
+    final chipColor = _getStatusColor(status);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       child: Row(
         children: [
-          // Title + Status
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Tow Details',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text('Tow Status', style: theme.textTheme.labelMedium),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: surfaceContainer,
-                        borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: theme.dividerColor.withOpacity(0.5)),
-                      ),
-                      child: Text(
-                        status,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          // Tow Details title
+          Text(
+            'Tow Details',
+            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(width: 12),
+          // Status chip
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: chipColor,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              status,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
           ),
-
+          // Spacer to push close button to the right
+          const Spacer(),
           // Close button
           IconButton(
             tooltip: 'Close',

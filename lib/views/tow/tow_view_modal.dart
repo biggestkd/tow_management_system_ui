@@ -5,8 +5,10 @@ import 'package:tow_management_system_ui/views/tow/top_bar.dart';
 
 import '../../models/tow.dart';
 import 'bottom_bar.dart';
+import 'history_section.dart';
 import 'locations_section.dart';
-import 'vehicle_driver_section.dart';
+import 'vehicle_section.dart';
+import 'driver_section.dart';
 import 'attachments_section.dart';
 import 'notes_section.dart';
 
@@ -43,10 +45,11 @@ class _TowViewModalState extends State<TowViewModal> {
     // Build sections using the separate widget files
     _sections = [
       LocationsSection(tow: widget.tow),
-      VehicleDriverSection(tow: widget.tow),
-      SummarySection(tow: widget.tow),
+      VehicleSection(tow: widget.tow),
+      DriverSection(tow: widget.tow),
       AttachmentsSection(tow: widget.tow),
       NotesSection(tow: widget.tow),
+      SummarySection(tow: widget.tow),
     ];
   }
 
@@ -97,21 +100,16 @@ class _TowViewModalState extends State<TowViewModal> {
                   [
                     LocationsSection(tow: widget.tow),
                     const SizedBox(height: 20),
-                    const Divider(height: 1),
+                    VehicleSection(tow: widget.tow),
                     const SizedBox(height: 20),
-                    VehicleDriverSection(tow: widget.tow),
-                    const SizedBox(height: 20),
-                    const Divider(height: 1),
-                    const SizedBox(height: 20),
-                    SummarySection(tow: widget.tow),
-                    const SizedBox(height: 20),
-                    const Divider(height: 1),
+                    DriverSection(tow: widget.tow),
                     const SizedBox(height: 20),
                     AttachmentsSection(tow: widget.tow),
                     const SizedBox(height: 20),
-                    const Divider(height: 1),
-                    const SizedBox(height: 20),
                     NotesSection(tow: widget.tow),
+                    const SizedBox(height: 20),
+                    SummarySection(tow: widget.tow),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),

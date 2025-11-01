@@ -67,7 +67,7 @@ class _InfoItem extends StatelessWidget {
           ),
           child: Icon(
             icon,
-            size: 18,
+            size: 10,
             color: theme.colorScheme.primary,
           ),
         ),
