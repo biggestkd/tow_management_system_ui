@@ -1,8 +1,10 @@
+import 'vehicle.dart';
+
 class Tow {
   final String? id;
   final String? destination;
   final String? pickup;
-  final String? vehicle;
+  final Vehicle? vehicle;
   final String? primaryContact;
   final List<String>? attachments;
   final String? notes;
@@ -32,7 +34,7 @@ class Tow {
       id: json['id'],
       destination: json['destination'],
       pickup: json['pickup'],
-      vehicle: json['vehicle'],
+      vehicle: _parseVehicle(json['vehicle']),
       primaryContact: json['primaryContact'],
       attachments: json['attachments'] != null
           ? List<String>.from(json['attachments'])
@@ -56,7 +58,7 @@ class Tow {
     if (id != null) 'id': id,
     if (destination != null) 'destination': destination,
     if (pickup != null) 'pickup': pickup,
-    if (vehicle != null) 'vehicle': vehicle,
+    if (vehicle != null) 'vehicle': vehicle!.toJson(),
     if (primaryContact != null) 'primaryContact': primaryContact,
     if (attachments != null) 'attachments': attachments,
     if (notes != null) 'notes': notes,
@@ -70,4 +72,21 @@ class Tow {
   /// Optional helper to convert Unix timestamp to DateTime
   DateTime? get createdAtDate =>
       createdAt != null ? DateTime.fromMillisecondsSinceEpoch(createdAt! * 1000) : null;
+
+  static Vehicle? _parseVehicle(dynamic raw) {
+    if (raw == null) return null;
+    if (raw is Map<String, dynamic>) return Vehicle.fromJson(raw);
+    // Backward-compat: accept a single string like "2020 Toyota Camry"
+    if (raw is String) {
+      final parts = raw.trim().split(RegExp(r'\s+'));
+      if (parts.length >= 3) {
+        return Vehicle(year: parts[0], make: parts[1], model: parts.sublist(2).join(' '));
+      }
+      if (parts.length == 2) {
+        return Vehicle(make: parts[0], model: parts[1]);
+      }
+      return Vehicle(model: raw);
+    }
+    return null;
+  }
 }
