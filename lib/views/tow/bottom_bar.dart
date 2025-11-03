@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// Bottom section with Cancel, Proceed, and Save buttons.
 class BottomBar extends StatelessWidget {
   const BottomBar({
-    this.onCancel,
-    this.onProceed,
-    this.onSave,
+    super.key,
+    required this.status,
+    required this.onStatusChange,
   });
 
-  final VoidCallback? onCancel;
-  final VoidCallback? onProceed;
-  final VoidCallback? onSave;
+  final String status;
+  final ValueChanged<String> onStatusChange;
 
   @override
   Widget build(BuildContext context) {
@@ -18,34 +16,48 @@ class BottomBar extends StatelessWidget {
       builder: (context, constraints) {
         final isNarrow = constraints.maxWidth < 520;
 
-        final buttons = [
+        // Determine primary button label + next status.
+        String primaryLabel = 'Complete';
+        String nextStatus = 'completed';
+        final st = status.toLowerCase();
+
+        if (st == 'pending') {
+          primaryLabel = 'Accept';
+          nextStatus = 'accepted';
+        } else if (st == 'accepted' ||
+            st == 'dispatched' ||
+            st == 'arrived_pickup' ||
+            st == 'in_transit') {
+          primaryLabel = 'Complete';
+          nextStatus = 'completed';
+        }
+
+        // Disable actions when already terminal
+        final isTerminal = st == 'completed' || st == 'cancelled';
+
+        final buttons = <Widget>[
           OutlinedButton(
-            onPressed: onCancel,
+            onPressed: isTerminal ? null : () => onStatusChange('cancelled'),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: onProceed,
-            child: const Text('Proceed to Next Step'),
-          ),
-          FilledButton.tonal(
-            onPressed: onSave,
-            child: const Text('Save'),
+            onPressed: isTerminal ? null : () => onStatusChange(nextStatus),
+            child: Text(primaryLabel),
           ),
         ];
 
         if (isNarrow) {
-          // Stack vertically with spacing on narrow screens
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ...buttons
-                  .map((b) => Padding(padding: const EdgeInsets.only(bottom: 10), child: b))
-                  .toList(),
-            ],
+            children: buttons
+                .map((b) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: b,
+            ))
+                .toList(),
           );
         }
 
-        // Horizontal layout with spacing on wider screens
         return Row(
           children: [
             Expanded(
@@ -56,8 +68,6 @@ class BottomBar extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             buttons[1],
-            const SizedBox(width: 12),
-            buttons[2],
           ],
         );
       },

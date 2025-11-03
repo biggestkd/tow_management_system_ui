@@ -4,22 +4,24 @@ import '../../models/tow.dart';
 class VehicleSection extends StatefulWidget {
   const VehicleSection({
     super.key,
-    required this.tow,
+    required this.yearController,
+    required this.makeController,
+    required this.modelController,
+    required this.stateController,
+    required this.plateNumberController,
   });
 
-  final Tow tow;
+  final TextEditingController yearController;
+  final TextEditingController makeController;
+  final TextEditingController modelController;
+  final TextEditingController stateController;
+  final TextEditingController plateNumberController;
 
   @override
   State<VehicleSection> createState() => _VehicleSectionState();
 }
 
 class _VehicleSectionState extends State<VehicleSection> {
-  late String? _selectedYear;
-  late String? _selectedMake;
-  String? _selectedModel;
-  String? _selectedState;
-
-  late TextEditingController _licensePlateController;
 
   // === Make → Models map (provided) ===
   // Keep this near the widget so it can be reused/tested; you can move it to a constants file later.
@@ -72,34 +74,6 @@ class _VehicleSectionState extends State<VehicleSection> {
     'Volvo': ['240', '260', '740', '760', '780', '850', '940', '960', 'C30', 'C40', 'C70', 'EC40', 'EX30', 'EX40', 'EX90', 'S40', 'S60', 'S70', 'S80', 'S90', 'V40', 'V50', 'V60', 'V70', 'V90', 'XC40', 'XC60', 'XC70', 'XC90'],
   };
 
-  @override
-  void initState() {
-    super.initState();
-
-    final vehicleParts = _parseVehicle(widget.tow.vehicle);
-    _selectedYear = _sanitize(vehicleParts['year']);
-    _selectedMake = _sanitize(vehicleParts['make']);
-    _selectedModel = null;
-
-    // If parsed model is valid for parsed make, pre-select it
-    final parsedModel = _sanitize(vehicleParts['model']);
-    if (_selectedMake != null && parsedModel != null) {
-      final models = _getModelsForMake(_selectedMake!);
-      if (models.contains(parsedModel)) {
-        _selectedModel = parsedModel;
-      }
-    }
-
-    _selectedState = null; // Initialize state selection
-    _licensePlateController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _licensePlateController.dispose();
-    super.dispose();
-  }
-
   String? _sanitize(String? s) =>
       (s == null || s.trim().isEmpty || s.trim() == '—') ? null : s.trim();
 
@@ -133,34 +107,31 @@ class _VehicleSectionState extends State<VehicleSection> {
     ];
   }
 
-  Map<String, String> _parseVehicle(String? vehicle) {
-    if (vehicle == null || vehicle.isEmpty || vehicle == '—') return {};
-    final parts = vehicle.trim().split(RegExp(r'\s+'));
-    if (parts.length >= 3) {
-      final year = parts[0];
-      final make = parts[1];
-      final model = parts.sublist(2).join(' ');
-      return {'year': year, 'make': make, 'model': model};
-    } else if (parts.length == 2) {
-      return {'year': '', 'make': parts[0], 'model': parts[1]};
-    } else {
-      return {'year': '', 'make': '', 'model': vehicle};
-    }
-  }
+  // parsing no longer needed; Tow.vehicle is structured
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final years = _getYears();
     final makes = _getMakes();
-    final models = _selectedMake == null ? <String>[] : _getModelsForMake(_selectedMake!);
+    
+    // Get current values from controllers
+    final currentYear = _sanitize(widget.yearController.text);
+    final currentMake = _sanitize(widget.makeController.text);
+    final currentModel = _sanitize(widget.modelController.text);
+    final currentState = _sanitize(widget.stateController.text);
+    
+    final models = currentMake == null ? <String>[] : _getModelsForMake(currentMake);
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.35),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -185,31 +156,44 @@ class _VehicleSectionState extends State<VehicleSection> {
               Expanded(
                 child: _VehicleDropdownField(
                   label: 'Year',
-                  value: _selectedYear,
+                  value: currentYear,
                   items: years,
-                  onChanged: (value) => setState(() => _selectedYear = value),
+                  onChanged: (value) {
+                    setState(() {
+                      widget.yearController.text = value ?? '';
+                    });
+                  },
+                  enabled: false, // Read-only, but uses controller for future editability
                 ),
               ),
               _vDivider(theme),
               Expanded(
                 child: _VehicleDropdownField(
                   label: 'Make',
-                  value: _selectedMake,
+                  value: currentMake,
                   items: makes,
-                  onChanged: (value) => setState(() {
-                    _selectedMake = value;
-                    _selectedModel = null; // reset model when make changes
-                  }),
+                  onChanged: (value) {
+                    setState(() {
+                      widget.makeController.text = value ?? '';
+                      // Reset model when make changes
+                      widget.modelController.text = '';
+                    });
+                  },
+                  enabled: false, // Read-only, but uses controller for future editability
                 ),
               ),
               _vDivider(theme),
               Expanded(
                 child: _VehicleDropdownField(
                   label: 'Model',
-                  value: _selectedModel,
+                  value: currentModel,
                   items: models,
-                  onChanged: (value) => setState(() => _selectedModel = value),
-                  enabled: _selectedMake != null,
+                  onChanged: (value) {
+                    setState(() {
+                      widget.modelController.text = value ?? '';
+                    });
+                  },
+                  enabled: false, // Read-only, but uses controller for future editability
                 ),
               ),
             ],
@@ -222,17 +206,23 @@ class _VehicleSectionState extends State<VehicleSection> {
               Expanded(
                 child: _VehicleDropdownField(
                   label: 'State',
-                  value: _selectedState,
+                  value: currentState,
                   items: _getStates(),
-                  onChanged: (value) => setState(() => _selectedState = value),
+                  onChanged: (value) {
+                    setState(() {
+                      widget.stateController.text = value ?? '';
+                    });
+                  },
+                  enabled: false, // Read-only, but uses controller for future editability
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: _VehicleTextField(
                   label: 'License Plate',
-                  controller: _licensePlateController,
+                  controller: widget.plateNumberController,
                   onChanged: (value) {},
+                  readOnly: true, // Read-only, but uses controller for future editability
                 ),
               ),
             ],
@@ -326,11 +316,13 @@ class _VehicleTextField extends StatelessWidget {
     required this.label,
     required this.controller,
     required this.onChanged,
+    this.readOnly = false,
   });
 
   final String label;
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -349,6 +341,7 @@ class _VehicleTextField extends StatelessWidget {
         const SizedBox(height: 8),
         TextField(
           controller: controller,
+          readOnly: readOnly,
           onChanged: onChanged,
           style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           decoration: InputDecoration(

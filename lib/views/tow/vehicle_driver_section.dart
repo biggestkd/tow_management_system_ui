@@ -26,7 +26,7 @@ class VehicleDriverSection extends StatelessWidget {
         _InfoItem(
           icon: Icons.local_shipping,
           label: 'Vehicle',
-          value: tow.vehicle ?? '—',
+          value: _vehicleDisplay(tow),
         ),
         if (tow.primaryContact != null) ...[
           const SizedBox(height: 16),
@@ -39,6 +39,16 @@ class VehicleDriverSection extends StatelessWidget {
       ],
     );
   }
+}
+
+String _vehicleDisplay(Tow tow) {
+  final v = tow.vehicle;
+  if (v == null) return '—';
+  final parts = [v.year, v.make, v.model]
+      .where((p) => p != null && p!.trim().isNotEmpty)
+      .map((p) => p!.trim())
+      .toList();
+  return parts.isEmpty ? '—' : parts.join(' ');
 }
 
 class _InfoItem extends StatelessWidget {

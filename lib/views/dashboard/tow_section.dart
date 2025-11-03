@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/company.dart';
 import '../../models/tow.dart';
+import '../../models/vehicle.dart';
 import 'tow_card.dart';
 import '../tow/tow_view_modal.dart';
 
@@ -10,11 +11,13 @@ class TowsSection extends StatefulWidget {
     required this.company,
     required this.towHistory,
     required this.onOpenBookingLink,
+    this.onReload,
   });
 
   final Company company;
   final List<Tow> towHistory;
   final VoidCallback onOpenBookingLink;
+  final VoidCallback? onReload;
 
   @override
   State<TowsSection> createState() => _TowsSectionState();
@@ -31,18 +34,16 @@ class _TowsSectionState extends State<TowsSection> {
           tow: tow,
           towStatus: _formatStatus(tow.status ?? ''),
           onCancel: () => Navigator.of(dialogContext).pop(),
-          onProceed: () {
-            // TODO: Implement proceed action
-            Navigator.of(dialogContext).pop();
-          },
-          onSave: () {
-            // TODO: Implement save action
-            tow.vehicle == "completed";
-            Navigator.of(dialogContext).pop();
-          },
+          onProceed: () => Navigator.of(dialogContext).pop(),
+          onSave: () => Navigator.of(dialogContext).pop(),
         ),
       ),
-    );
+    ).then((result) {
+      // If result is true, it means status was changed - reload the page
+      if (result == true && widget.onReload != null) {
+        widget.onReload!();
+      }
+    });
   }
 
   String _formatStatus(String status) {
@@ -79,7 +80,7 @@ class _TowsSectionState extends State<TowsSection> {
                 price: tow.price,
                 pickupLocation: tow.pickup ?? '',
                 dropOffLocation: tow.destination ?? '',
-                vehicle: tow.vehicle ?? '',
+                vehicle: _vehicleString(tow),
                 driverName: tow.primaryContact ?? '',
                 driverPhone: null,
                 notes: tow.notes ?? '',
@@ -90,6 +91,16 @@ class _TowsSectionState extends State<TowsSection> {
       ],
     );
   }
+}
+
+String _vehicleString(Tow tow) {
+  final v = tow.vehicle;
+  if (v == null) return '';
+  final parts = [v.year, v.make, v.model]
+      .where((p) => p != null && p!.trim().isNotEmpty)
+      .map((p) => p!.trim())
+      .toList();
+  return parts.join(' ');
 }
 
 class _EmptyState extends StatelessWidget {

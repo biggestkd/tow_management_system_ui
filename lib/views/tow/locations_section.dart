@@ -4,10 +4,12 @@ import '../../models/tow.dart';
 class LocationsSection extends StatelessWidget {
   const LocationsSection({
     super.key,
-    required this.tow,
+    required this.pickupController,
+    required this.destinationController,
   });
 
-  final Tow tow;
+  final TextEditingController pickupController;
+  final TextEditingController destinationController;
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +19,11 @@ class LocationsSection extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(12),
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withOpacity(0.35),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,14 +37,14 @@ class LocationsSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _LocationField(
-            label: 'Pickup Location',
-            value: tow.pickup ?? '—',
+            label: 'Pickup',
+            controller: pickupController,
             icon: Icons.location_on_outlined,
           ),
           const SizedBox(height: 12),
           _LocationField(
             label: 'Destination',
-            value: tow.destination ?? '—',
+            controller: destinationController,
             icon: Icons.flag_outlined,
           ),
         ],
@@ -48,27 +53,49 @@ class LocationsSection extends StatelessWidget {
   }
 }
 
-class _LocationField extends StatelessWidget {
+class _LocationField extends StatefulWidget {
   const _LocationField({
     required this.label,
-    required this.value,
+    required this.controller,
     required this.icon,
   });
 
   final String label;
-  final String value;
+  final TextEditingController controller;
   final IconData icon;
+
+  @override
+  State<_LocationField> createState() => _LocationFieldState();
+}
+
+class _LocationFieldState extends State<_LocationField> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onControllerChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onControllerChanged);
+    super.dispose();
+  }
+
+  void _onControllerChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final hasValue = widget.controller.text.trim().isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Label above the field
         Text(
-          label,
+          widget.label,
           style: theme.textTheme.bodySmall?.copyWith(
             color: theme.colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w500,
@@ -95,23 +122,31 @@ class _LocationField extends StatelessWidget {
                   children: [
                     // Left icon
                     Icon(
-                      icon,
+                      widget.icon,
                       size: 20,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 12),
-                    // Location text
+                    // Location text field (read-only, but uses controller for future editability)
                     Expanded(
-                      child: Text(
-                        value == '—' ? 'Optional' : value,
+                      child: TextField(
+                        controller: widget.controller,
+                        readOnly: true,
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: value == '—'
-                              ? theme.colorScheme.onSurfaceVariant
-                              : theme.colorScheme.onSurface,
-                          fontStyle: value == '—' ? FontStyle.italic : FontStyle.normal,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Optional',
+                          hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                          isDense: true,
                         ),
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        textInputAction: TextInputAction.next,
                       ),
                     ),
                   ],
@@ -126,7 +161,7 @@ class _LocationField extends StatelessWidget {
                 size: 20,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
-              onPressed: value != '—' && value != 'Optional'
+              onPressed: hasValue
                   ? () {
                       // TODO: Copy to clipboard
                     }
@@ -143,7 +178,7 @@ class _LocationField extends StatelessWidget {
                 size: 20,
                 color: theme.colorScheme.onSurfaceVariant,
               ),
-              onPressed: value != '—' && value != 'Optional'
+              onPressed: hasValue
                   ? () {
                       // TODO: Open in map
                     }

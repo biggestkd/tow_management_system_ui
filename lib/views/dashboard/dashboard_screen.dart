@@ -145,6 +145,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     onOpenBookingLink: () {
                       DashboardController.navigateToSchedulingPage(_company!.schedulingLink ?? "");
                     },
+                    onReload: () {
+                      _bootstrap();
+                    },
                   ),
                 ),
               ),

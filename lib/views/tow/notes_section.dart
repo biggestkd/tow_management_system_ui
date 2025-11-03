@@ -1,34 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../models/tow.dart';
 
-class NotesSection extends StatefulWidget {
+class NotesSection extends StatelessWidget {
   const NotesSection({
     super.key,
-    required this.tow,
+    required this.controller,
     this.onChanged,
   });
 
-  final Tow tow;
+  final TextEditingController controller;
   final ValueChanged<String>? onChanged;
-
-  @override
-  State<NotesSection> createState() => _NotesSectionState();
-}
-
-class _NotesSectionState extends State<NotesSection> {
-  late TextEditingController _notesController;
-
-  @override
-  void initState() {
-    super.initState();
-    _notesController = TextEditingController(text: widget.tow.notes ?? '');
-  }
-
-  @override
-  void dispose() {
-    _notesController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +33,10 @@ class _NotesSectionState extends State<NotesSection> {
           ),
           const SizedBox(height: 12),
           TextField(
-            controller: _notesController,
+            controller: controller,
+            readOnly: true,
             maxLines: 4,
-            onChanged: widget.onChanged,
+            onChanged: onChanged,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: Colors.black87,
               height: 1.5,
