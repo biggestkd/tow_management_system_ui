@@ -58,4 +58,33 @@ class CompanyAPI {
     }
   }
 
+  /// Update an existing company
+  static Future<Company?> updateCompany(Company company) async {
+    if (company.id == null || company.id!.isEmpty) {
+      debugPrint("Company ID is required for update.");
+      return null;
+    }
+
+    final uri = Uri.parse('$baseUrl/${company.id}');
+    debugPrint("Updating company: ${jsonEncode(company.toJson())}");
+
+    final response = await http.put(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(company.toJson()),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      debugPrint("Company updated successfully.");
+      if (response.statusCode == 200 && response.body.isNotEmpty) {
+        final decodedBody = jsonDecode(response.body);
+        return Company.fromJson(decodedBody);
+      }
+      return company;
+    } else {
+      debugPrint("Failed to update company. ${response.statusCode} - ${response.body}");
+      return null;
+    }
+  }
+
 }
