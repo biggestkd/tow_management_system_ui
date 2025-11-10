@@ -1,5 +1,6 @@
 // lib/screens/onboarding/onboarding_screen.dart
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tow_management_system_ui/models/user.dart';
 import 'package:tow_management_system_ui/views/dashboard/scheduling_link_section.dart';
 import 'package:tow_management_system_ui/views/dashboard/top_nav_bar.dart';
@@ -93,7 +94,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   companyActive: _company?.status ?? '',
                   user: _user!,
                   onAccountPressed: () {
-                    // TODO: go_router to /account
+                    context.go('/account-information');
                   },
                   onLogoutPressed: () async {
                       DashboardController.logoutUser();

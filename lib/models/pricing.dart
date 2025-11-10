@@ -1,27 +1,23 @@
-import 'package:tow_management_system_ui/models/rule.dart';
-
 class Pricing {
   final String id;
   final String itemName;
-  final double amount;
-  final Rule rule;
-  final String accountId;
+  final int amount;
+  final String companyId;
 
   Pricing({
     required this.id,
     required this.itemName,
     required this.amount,
-    required this.rule,
-    required this.accountId,
+    required this.companyId,
   });
 
   factory Pricing.fromJson(Map<String, dynamic> json) {
+    final amountValue = json['amount'] ?? 0;
     return Pricing(
       id: json['id'] ?? '',
       itemName: json['itemName'] ?? '',
-      amount: (json['amount'] ?? 0).toDouble(),
-      rule: Rule.fromJson(json['rule'] ?? {}),
-      accountId: json['accountId'] ?? '',
+      amount: amountValue is int ? amountValue : (amountValue as num).toInt(),
+      companyId: json['companyId'] ?? '',
     );
   }
 
@@ -29,7 +25,6 @@ class Pricing {
     'id': id,
     'itemName': itemName,
     'amount': amount,
-    'rule': rule.toJson(),
-    'accountId': accountId,
+    'companyId': companyId,
   };
 }
