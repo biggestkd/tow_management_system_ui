@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import '../../models/user.dart';
 import '../../models/pricing.dart';
-import '../../models/rule.dart';
-import '../../controllers/dashboard_controller.dart';
-import '../../services/user_api_service.dart';
-import '../../services/pricing_api.dart';
-import '../../colors.dart';
 import '../../models/company.dart';
 import '../../models/account.dart';
-import '../../services/company_api_service.dart';
+import '../../controllers/account_controller.dart';
+import '../../colors.dart';
 import '../../services/account_api_service.dart';
 import 'user_information_tab.dart';
 import 'price_manager_tab.dart';
@@ -33,26 +30,8 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
   bool _loading = true;
   String? _error;
 
-  // User information fields
-  final TextEditingController _firstNameController = TextEditingController();
-  final TextEditingController _lastNameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-
-  // Company information fields
-  final TextEditingController _companyNameController = TextEditingController();
-  final TextEditingController _websiteController = TextEditingController();
-  final TextEditingController _streetController = TextEditingController();
-  final TextEditingController _cityController = TextEditingController();
-  final TextEditingController _stateController = TextEditingController();
-  final TextEditingController _zipCodeController = TextEditingController();
-  final TextEditingController _companyPhoneController = TextEditingController();
-
   // Payment information fields
   final TextEditingController _stripeAccountIdController = TextEditingController();
-
-  // Pricing fields
-  final Map<String, TextEditingController> _pricingControllers = {};
 
   @override
   void initState() {
@@ -60,6 +39,7 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
+        // Force rebuild when tab changes to reset forms with saved data
         setState(() {});
       }
     });
@@ -69,19 +49,7 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
   @override
   void dispose() {
     _tabController.dispose();
-    _firstNameController.dispose();
-    _lastNameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _companyNameController.dispose();
-    _websiteController.dispose();
-    _streetController.dispose();
-    _cityController.dispose();
-    _stateController.dispose();
-    _zipCodeController.dispose();
-    _companyPhoneController.dispose();
     _stripeAccountIdController.dispose();
-    _pricingControllers.values.forEach((controller) => controller.dispose());
     super.dispose();
   }
 
@@ -92,28 +60,32 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
     });
 
     try {
-      // Load user
-      final user = await DashboardController.loadUser();
+      // Get current authenticated user ID from Amplify Auth
+      final authUser = await Amplify.Auth.getCurrentUser();
+      final userId = authUser.userId;
+
+      // Load user information using Account_Controller
+      final user = await AccountController.loadUserInformation(userId);
       if (user == null) {
         throw Exception('Failed to load user');
       }
 
-      // Load company
+      // Load company information using Account_Controller
       Company? company;
-      if (user.companyId != null) {
-        company = await DashboardController.loadCompany(user.companyId);
+      if (user.companyId != null && user.companyId!.isNotEmpty) {
+        company = await AccountController.loadCompanyInformation(user.companyId!);
       }
 
-      // Load account (using company ID)
+      // Load account (using company ID) - keep using AccountAPI directly as there's no Account_Controller method
       Account? account;
-      if (user.companyId != null) {
+      if (user.companyId != null && user.companyId!.isNotEmpty) {
         account = await AccountAPI.getAccountByCompanyId(user.companyId!);
       }
 
-      // Load pricing (using user ID as accountId)
+      // Load pricing using Account_Controller
       List<Pricing>? pricingList;
-      if (user.id != null) {
-        pricingList = await PricingAPI.getPricingByAccountId(user.id!);
+      if (user.companyId != null && user.companyId!.isNotEmpty) {
+        pricingList = await AccountController.loadPrices(user.companyId!);
       }
 
       setState(() {
@@ -123,30 +95,13 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
         _pricingList = pricingList ?? [];
         _loading = false;
 
-        // Initialize user fields
-        _firstNameController.text = user.firstName ?? '';
-        _lastNameController.text = user.lastName ?? '';
-        _emailController.text = user.email ?? '';
-        _phoneController.text = user.phone ?? '';
-
-        // Initialize company fields
-        _companyNameController.text = company?.name ?? '';
-        _websiteController.text = company?.website ?? '';
-        _streetController.text = company?.street ?? '';
-        _cityController.text = company?.city ?? '';
-        _stateController.text = company?.state ?? '';
-        _zipCodeController.text = company?.zipCode ?? '';
-        _companyPhoneController.text = company?.phoneNumber ?? '';
-
         // Initialize payment fields
         _stripeAccountIdController.text = account?.stripeAccountId ?? '';
-
-        // Initialize pricing controllers
-        for (var pricing in _pricingList) {
-          _pricingControllers[pricing.id] = TextEditingController(
-            text: pricing.amount.toStringAsFixed(2),
-          );
-        }
+      });
+    } on SignedOutException {
+      setState(() {
+        _loading = false;
+        _error = 'User is not signed in';
       });
     } catch (e) {
       setState(() {
@@ -156,7 +111,7 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
     }
   }
 
-  Future<void> _saveUserInformation() async {
+  Future<void> _saveUserInformation(String firstName, String lastName, String email, String phone) async {
     if (_user == null) return;
 
     try {
@@ -164,26 +119,28 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
         id: _user!.id,
         companyId: _user!.companyId,
         createdDate: _user!.createdDate,
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: _emailController.text.trim(),
-        phone: _phoneController.text.trim(),
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phone: phone,
       );
 
-      final result = await UserAPI.updateUser(updatedUser);
-      if (result != null) {
-        setState(() {
-          _user = updatedUser;
-        });
+      // Use Account_Controller.saveContactInformation
+      final error = await AccountController.saveContactInformation(updatedUser);
+      
+      if (error == null) {
+        // Success - reload data to get the latest information
+        await _loadData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User information updated successfully')),
+            const SnackBar(content: Text('Contact information saved successfully')),
           );
         }
       } else {
+        // Error occurred
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to update user information')),
+            SnackBar(content: Text('Failed to save contact information: $error')),
           );
         }
       }
@@ -196,152 +153,25 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
     }
   }
 
-  Future<void> _savePricing() async {
-    if (_user == null || _user!.id == null) return;
-
+  Future<void> _savePricing(List<Pricing> prices) async {
     try {
-      bool allSuccess = true;
+      // Use Account_Controller.updatePrices
+      final error = await AccountController.updatePrices(prices);
       
-      // Handle Hook Up Fee and Per Mile Amount
-      const String hookUpKey = 'hook-up-fee';
-      const String perMileKey = 'per-mile-amount';
-      
-      // Save Hook Up Fee
-      final hookUpController = _pricingControllers[hookUpKey];
-      if (hookUpController != null) {
-        final hookUpFee = _pricingList.firstWhere(
-          (p) => p.itemName.toLowerCase().contains('hook'),
-          orElse: () => Pricing(
-            id: '',
-            itemName: 'Hook Up Fee',
-            amount: 0.0,
-            rule: Rule(unit: '', condition: ''),
-            accountId: _user!.id!,
-          ),
-        );
-        
-        final newAmount = double.tryParse(hookUpController.text) ?? hookUpFee.amount;
-        
-        Pricing? result;
-        // Check if pricing exists in the list (not just placeholder)
-        final existingHookUp = _pricingList.firstWhere(
-          (p) => p.itemName.toLowerCase().contains('hook'),
-          orElse: () => Pricing(id: '', itemName: '', amount: 0.0, rule: Rule(unit: '', condition: ''), accountId: ''),
-        );
-        
-        // Check if pricing actually exists in database (has a real ID)
-        final pricingExists = existingHookUp.id.isNotEmpty && 
-            _pricingList.any((p) => p.id == existingHookUp.id && p.id.isNotEmpty);
-        
-        if (!pricingExists) {
-          // Create new pricing item (backend will generate ID)
-          final newPricing = Pricing(
-            id: '', // Backend will generate
-            itemName: 'Hook Up Fee',
-            amount: newAmount,
-            rule: Rule(unit: '', condition: ''),
-            accountId: _user!.id!,
+      if (error == null) {
+        // Success - reload data to get the latest information
+        await _loadData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Pricing updated successfully')),
           );
-          result = await PricingAPI.createPricing(newPricing);
-        } else {
-          // Update existing pricing item
-          final updatedPricing = Pricing(
-            id: existingHookUp.id,
-            itemName: existingHookUp.itemName,
-            amount: newAmount,
-            rule: existingHookUp.rule,
-            accountId: existingHookUp.accountId,
+        }
+      } else {
+        // Error occurred
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to update pricing: $error')),
           );
-          result = await PricingAPI.updatePricing(updatedPricing);
-        }
-        
-        if (result != null) {
-          // Update the pricing in the list
-          final index = _pricingList.indexWhere((p) => p.id == result!.id);
-          if (index != -1) {
-            _pricingList[index] = result;
-          } else {
-            _pricingList.add(result);
-          }
-        } else {
-          allSuccess = false;
-        }
-      }
-      
-      // Save Per Mile Amount
-      final perMileController = _pricingControllers[perMileKey];
-      if (perMileController != null) {
-        final perMile = _pricingList.firstWhere(
-          (p) => p.itemName.toLowerCase().contains('mile') || p.itemName.toLowerCase().contains('per mile'),
-          orElse: () => Pricing(
-            id: '',
-            itemName: 'Per Mile Amount',
-            amount: 0.0,
-            rule: Rule(unit: '', condition: ''),
-            accountId: _user!.id!,
-          ),
-        );
-        
-        final newAmount = double.tryParse(perMileController.text) ?? perMile.amount;
-        
-        Pricing? result;
-        // Check if pricing exists in the list (not just placeholder)
-        final existingPerMile = _pricingList.firstWhere(
-          (p) => p.itemName.toLowerCase().contains('mile') || p.itemName.toLowerCase().contains('per mile'),
-          orElse: () => Pricing(id: '', itemName: '', amount: 0.0, rule: Rule(unit: '', condition: ''), accountId: ''),
-        );
-        
-        // Check if pricing actually exists in database (has a real ID)
-        final pricingExists = existingPerMile.id.isNotEmpty && 
-            _pricingList.any((p) => p.id == existingPerMile.id && p.id.isNotEmpty);
-        
-        if (!pricingExists) {
-          // Create new pricing item (backend will generate ID)
-          final newPricing = Pricing(
-            id: '', // Backend will generate
-            itemName: 'Per Mile Amount',
-            amount: newAmount,
-            rule: Rule(unit: '', condition: ''),
-            accountId: _user!.id!,
-          );
-          result = await PricingAPI.createPricing(newPricing);
-        } else {
-          // Update existing pricing item
-          final updatedPricing = Pricing(
-            id: existingPerMile.id,
-            itemName: existingPerMile.itemName,
-            amount: newAmount,
-            rule: existingPerMile.rule,
-            accountId: existingPerMile.accountId,
-          );
-          result = await PricingAPI.updatePricing(updatedPricing);
-        }
-        
-        if (result != null) {
-          // Update the pricing in the list
-          final index = _pricingList.indexWhere((p) => p.id == result!.id);
-          if (index != -1) {
-            _pricingList[index] = result;
-          } else {
-            _pricingList.add(result);
-          }
-        } else {
-          allSuccess = false;
-        }
-      }
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(allSuccess
-                ? 'Pricing updated successfully'
-                : 'Some pricing updates failed'),
-          ),
-        );
-        
-        // Reload data to get updated IDs
-        if (allSuccess) {
-          await _loadData();
         }
       }
     } catch (e) {
@@ -353,7 +183,7 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
     }
   }
 
-  Future<void> _saveCompanyInformation() async {
+  Future<void> _saveCompanyInformation(String name, String website, String street, String city, String zipCode, String state, String phoneNumber) async {
     if (_company == null || _company!.id == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -366,31 +196,33 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
     try {
       final updatedCompany = Company(
         id: _company!.id,
-        name: _companyNameController.text.trim(),
-        website: _websiteController.text.trim().isEmpty ? null : _websiteController.text.trim(),
+        name: name,
+        website: website.isEmpty ? null : website,
         status: _company!.status,
-        street: _streetController.text.trim().isEmpty ? null : _streetController.text.trim(),
-        city: _cityController.text.trim().isEmpty ? null : _cityController.text.trim(),
-        zipCode: _zipCodeController.text.trim().isEmpty ? null : _zipCodeController.text.trim(),
-        state: _stateController.text.trim().isEmpty ? null : _stateController.text.trim(),
-        phoneNumber: _companyPhoneController.text.trim().isEmpty ? null : _companyPhoneController.text.trim(),
+        street: street.isEmpty ? null : street,
+        city: city.isEmpty ? null : city,
+        zipCode: zipCode.isEmpty ? null : zipCode,
+        state: state.isEmpty ? null : state,
+        phoneNumber: phoneNumber.isEmpty ? null : phoneNumber,
         schedulingLink: _company!.schedulingLink,
       );
 
-      final result = await CompanyAPI.updateCompany(updatedCompany);
-      if (result != null) {
-        setState(() {
-          _company = updatedCompany;
-        });
+      // Use Account_Controller.saveCompanyInformation
+      final error = await AccountController.saveCompanyInformation(updatedCompany);
+      
+      if (error == null) {
+        // Success - reload data to get the latest information
+        await _loadData();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Company information updated successfully')),
+            const SnackBar(content: Text('Company information saved successfully')),
           );
         }
       } else {
+        // Error occurred
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to update company information')),
+            SnackBar(content: Text('Failed to save company information: $error')),
           );
         }
       }
@@ -522,20 +354,22 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
                                 controller: _tabController,
                                 children: [
                                   UserInformationTab(
-                                    firstNameController: _firstNameController,
-                                    lastNameController: _lastNameController,
-                                    emailController: _emailController,
-                                    phoneController: _phoneController,
+                                    key: ValueKey('user_info_${_user?.id}_${_user?.firstName}_${_user?.lastName}_${_user?.email}_${_user?.phone}'),
+                                    firstName: _user?.firstName ?? '',
+                                    lastName: _user?.lastName ?? '',
+                                    email: _user?.email ?? '',
+                                    phone: _user?.phone ?? '',
                                     onSave: _saveUserInformation,
                                   ),
                                   CompanyInformationTab(
-                                    nameController: _companyNameController,
-                                    websiteController: _websiteController,
-                                    streetController: _streetController,
-                                    cityController: _cityController,
-                                    stateController: _stateController,
-                                    zipCodeController: _zipCodeController,
-                                    phoneNumberController: _companyPhoneController,
+                                    key: ValueKey('company_info_${_company?.id}_${_company?.name}_${_company?.street}_${_company?.city}_${_company?.state}'),
+                                    name: _company?.name ?? '',
+                                    website: _company?.website ?? '',
+                                    street: _company?.street ?? '',
+                                    city: _company?.city ?? '',
+                                    zipCode: _company?.zipCode ?? '',
+                                    state: _company?.state ?? '',
+                                    phoneNumber: _company?.phoneNumber ?? '',
                                     onSave: _saveCompanyInformation,
                                   ),
                                   PaymentInformationTab(
@@ -543,8 +377,9 @@ class _AccountInformationScreenState extends State<AccountInformationScreen> wit
                                     onSave: _savePaymentInformation,
                                   ),
                                   PriceManagerTab(
+                                    key: ValueKey('price_manager_${_pricingList.length}_${_pricingList.map((p) => '${p.id}_${p.amount}').join('_')}'),
                                     pricingList: _pricingList,
-                                    pricingControllers: _pricingControllers,
+                                    accountId: _company?.id,
                                     onSave: _savePricing,
                                   ),
                                 ],

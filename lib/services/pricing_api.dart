@@ -7,17 +7,17 @@ import '../service_configurations.dart';
 class PricingAPI {
   static final String baseUrl = '${ApiSettings.apiBaseUrl}/pricing';
 
-  /// Get all pricing for a specific account
-  /// Endpoint: GET /pricing/account/:accountId
-  /// Response: 200 [Pricing] | 400/404 error text
-  static Future<List<Pricing>?> getPricingByAccountId(String accountId) async {
-    if (accountId.isEmpty) {
-      debugPrint("Account ID is required to fetch pricing.");
+  /// Get all prices for a specific company
+  /// Endpoint: GET /prices/company/:companyId
+  /// Response: 200 [Price] | 400/404/500 generic error text
+  static Future<List<Pricing>?> getPricesByCompanyId(String companyId) async {
+    if (companyId.isEmpty) {
+      debugPrint("Company ID is required to fetch prices.");
       return null;
     }
 
-    final uri = Uri.parse('$baseUrl/account/$accountId');
-    debugPrint("Fetching pricing for account ID: $accountId");
+    final uri = Uri.parse('$baseUrl/company/$companyId');
+    debugPrint("Fetching prices for company ID: $companyId");
 
     try {
       final response = await http.get(
@@ -31,79 +31,82 @@ class PricingAPI {
         if (decodedBody is List) {
           return decodedBody.map((item) => Pricing.fromJson(item)).toList();
         } else {
-          debugPrint("Unexpected pricing response format.");
+          debugPrint("Unexpected prices response format.");
           return null;
         }
       } else if (response.statusCode == 404) {
-        debugPrint("Pricing not found for account (404).");
+        debugPrint("Prices not found for company (404).");
         return [];
       } else {
-        debugPrint("Failed to fetch pricing. ${response.statusCode} - ${response.body}");
+        debugPrint("Failed to fetch prices. ${response.statusCode} - ${response.body}");
         return null;
       }
     } catch (e) {
-      debugPrint("Error fetching pricing: $e");
+      debugPrint("Error fetching prices: $e");
       return null;
     }
   }
 
-  /// Update an existing pricing item
-  /// Endpoint: PUT /pricing/:id
-  /// Response: 204 | error text
-  static Future<Pricing?> updatePricing(Pricing pricing) async {
-    final uri = Uri.parse('$baseUrl/${pricing.id}');
-
-    debugPrint("Updating pricing: ${jsonEncode(pricing.toJson())}");
-
-    final response = await http.put(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(pricing.toJson()),
-    );
-
-    if (response.statusCode == 204 || response.statusCode == 200) {
-      debugPrint("Pricing updated successfully.");
-      return pricing;
-    } else {
-      debugPrint("Failed to update pricing. ${response.statusCode} - ${response.body}");
-      return null;
+  /// Creates or sets multiple prices
+  /// Endpoint: PUT /prices
+  /// Request: [Price] (array of prices)
+  /// Response: 204 | 400/500 generic error text
+  static Future<bool> putPrices(List<Pricing> prices) async {
+    if (prices.isEmpty) {
+      debugPrint("At least one price is required.");
+      return false;
     }
-  }
 
-  /// Create a new pricing item
-  /// Endpoint: POST /pricing
-  /// Response: 201 | error text
-  static Future<Pricing?> createPricing(Pricing pricing) async {
     final uri = Uri.parse(baseUrl);
-
-    // Create JSON without id if it's empty (backend will generate)
-    final Map<String, dynamic> jsonToSend = {
-      'itemName': pricing.itemName,
-      'amount': pricing.amount,
-      'rule': pricing.rule.toJson(),
-      'accountId': pricing.accountId,
-    };
     
-    if (pricing.id.isNotEmpty) {
-      jsonToSend['id'] = pricing.id;
+    // Convert prices to JSON array
+    final List<Map<String, dynamic>> pricesJson = prices.map((p) => p.toJson()).toList();
+
+    debugPrint("Putting prices: ${jsonEncode(pricesJson)}");
+
+    try {
+      final response = await http.put(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(pricesJson),
+      );
+
+      if (response.statusCode == 204) {
+        debugPrint("Prices updated successfully.");
+        return true;
+      } else {
+        debugPrint("Failed to put prices. ${response.statusCode} - ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      debugPrint("Error putting prices: $e");
+      return false;
     }
+  }
 
-    debugPrint("Creating pricing: ${jsonEncode(jsonToSend)}");
+  // Legacy methods for backwards compatibility - deprecated
+  /// @deprecated Use getPricesByCompanyId instead
+  static Future<List<Pricing>?> getPricingByAccountId(String accountId) async {
+    debugPrint("Warning: getPricingByAccountId is deprecated. Use getPricesByCompanyId with companyId instead.");
+    // This method is kept for backwards compatibility but should be replaced
+    return getPricesByCompanyId(accountId);
+  }
 
-    final response = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode(jsonToSend),
-    );
+  /// @deprecated Use putPrices instead
+  static Future<Pricing?> updatePricing(Pricing pricing) async {
+    debugPrint("Warning: updatePricing is deprecated. Use putPrices instead.");
+    final success = await putPrices([pricing]);
+    return success ? pricing : null;
+  }
 
-    if (response.statusCode == 201) {
-      debugPrint("Pricing created successfully.");
-      final decodedBody = jsonDecode(response.body);
-      return Pricing.fromJson(decodedBody);
-    } else {
-      debugPrint("Failed to create pricing. ${response.statusCode} - ${response.body}");
-      return null;
+  /// @deprecated Use putPrices instead
+  static Future<Pricing?> createPricing(Pricing pricing) async {
+    debugPrint("Warning: createPricing is deprecated. Use putPrices instead.");
+    final success = await putPrices([pricing]);
+    if (success) {
+      return pricing;
     }
+    return null;
   }
 }
 

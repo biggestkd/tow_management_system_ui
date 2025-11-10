@@ -1,27 +1,99 @@
 import 'package:flutter/material.dart';
 import '../../colors.dart';
 
-class CompanyInformationTab extends StatelessWidget {
+class CompanyInformationTab extends StatefulWidget {
   const CompanyInformationTab({
     super.key,
-    required this.nameController,
-    required this.websiteController,
-    required this.streetController,
-    required this.cityController,
-    required this.stateController,
-    required this.zipCodeController,
-    required this.phoneNumberController,
+    required this.name,
+    required this.website,
+    required this.street,
+    required this.city,
+    required this.zipCode,
+    required this.state,
+    required this.phoneNumber,
     required this.onSave,
   });
 
-  final TextEditingController nameController;
-  final TextEditingController websiteController;
-  final TextEditingController streetController;
-  final TextEditingController cityController;
-  final TextEditingController stateController;
-  final TextEditingController zipCodeController;
-  final TextEditingController phoneNumberController;
-  final VoidCallback onSave;
+  final String name;
+  final String website;
+  final String street;
+  final String city;
+  final String zipCode;
+  final String state;
+  final String phoneNumber;
+  final Future<void> Function(String name, String website, String street, String city, String zipCode, String state, String phoneNumber) onSave;
+
+  @override
+  State<CompanyInformationTab> createState() => _CompanyInformationTabState();
+}
+
+class _CompanyInformationTabState extends State<CompanyInformationTab> {
+  late TextEditingController _nameController;
+  late TextEditingController _websiteController;
+  late TextEditingController _streetController;
+  late TextEditingController _cityController;
+  late TextEditingController _stateController;
+  late TextEditingController _zipCodeController;
+  late TextEditingController _phoneNumberController;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.name);
+    _websiteController = TextEditingController(text: widget.website);
+    _streetController = TextEditingController(text: widget.street);
+    _cityController = TextEditingController(text: widget.city);
+    _stateController = TextEditingController(text: widget.state);
+    _zipCodeController = TextEditingController(text: widget.zipCode);
+    _phoneNumberController = TextEditingController(text: widget.phoneNumber);
+  }
+
+  @override
+  void didUpdateWidget(CompanyInformationTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Always reset controllers when widget updates (tab switch) to discard unsaved edits
+    // This ensures that switching tabs always shows the saved data from AccountInformationScreen
+    _nameController.text = widget.name;
+    _websiteController.text = widget.website;
+    _streetController.text = widget.street;
+    _cityController.text = widget.city;
+    _stateController.text = widget.state;
+    _zipCodeController.text = widget.zipCode;
+    _phoneNumberController.text = widget.phoneNumber;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _websiteController.dispose();
+    _streetController.dispose();
+    _cityController.dispose();
+    _stateController.dispose();
+    _zipCodeController.dispose();
+    _phoneNumberController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSave() async {
+    setState(() {
+      _saving = true;
+    });
+
+    await widget.onSave(
+      _nameController.text.trim(),
+      _websiteController.text.trim(),
+      _streetController.text.trim(),
+      _cityController.text.trim(),
+      _zipCodeController.text.trim(),
+      _stateController.text.trim(),
+      _phoneNumberController.text.trim(),
+    );
+
+    setState(() {
+      _saving = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,20 +132,20 @@ class CompanyInformationTab extends StatelessWidget {
                   const SizedBox(height: 24),
                   _buildEditableTextField(
                     label: 'Company Name',
-                    controller: nameController,
+                    controller: _nameController,
                     theme: theme,
                   ),
                   const SizedBox(height: 16),
                   _buildEditableTextField(
                     label: 'Website',
-                    controller: websiteController,
+                    controller: _websiteController,
                     theme: theme,
                     keyboardType: TextInputType.url,
                   ),
                   const SizedBox(height: 16),
                   _buildEditableTextField(
                     label: 'Street Address',
-                    controller: streetController,
+                    controller: _streetController,
                     theme: theme,
                   ),
                   const SizedBox(height: 16),
@@ -82,7 +154,7 @@ class CompanyInformationTab extends StatelessWidget {
                       Expanded(
                         child: _buildEditableTextField(
                           label: 'City',
-                          controller: cityController,
+                          controller: _cityController,
                           theme: theme,
                         ),
                       ),
@@ -91,7 +163,7 @@ class CompanyInformationTab extends StatelessWidget {
                         flex: 2,
                         child: _buildEditableTextField(
                           label: 'State',
-                          controller: stateController,
+                          controller: _stateController,
                           theme: theme,
                         ),
                       ),
@@ -99,7 +171,7 @@ class CompanyInformationTab extends StatelessWidget {
                       Expanded(
                         child: _buildEditableTextField(
                           label: 'Zip Code',
-                          controller: zipCodeController,
+                          controller: _zipCodeController,
                           theme: theme,
                           keyboardType: TextInputType.number,
                         ),
@@ -109,7 +181,7 @@ class CompanyInformationTab extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildEditableTextField(
                     label: 'Phone Number',
-                    controller: phoneNumberController,
+                    controller: _phoneNumberController,
                     theme: theme,
                     keyboardType: TextInputType.phone,
                   ),
@@ -117,13 +189,22 @@ class CompanyInformationTab extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: onSave,
+                      onPressed: _saving ? null : _handleSave,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: const Text('Save Changes'),
+                      child: _saving
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Text('Save Changes'),
                     ),
                   ),
                 ],
