@@ -5,6 +5,9 @@ import 'package:tow_management_system_ui/models/user.dart';
 import 'package:tow_management_system_ui/services/pricing_api.dart';
 import 'package:tow_management_system_ui/services/company_api_service.dart';
 import 'package:tow_management_system_ui/services/user_api_service.dart';
+import 'package:tow_management_system_ui/services/payments_api.dart';
+import 'package:tow_management_system_ui/service_configurations.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class AccountController {
   /// Loads prices for a specific company
@@ -154,6 +157,37 @@ class AccountController {
     } catch (e) {
       debugPrint("Error in saveContactInformation: $e");
       return "Error saving contact information: $e";
+    }
+  }
+
+  /// Navigates to Stripe dashboard for payment account management
+  /// Opens the Stripe dashboard link in a new tab
+  static Future<void> navigateToStripeDashboard(String companyId) async {
+    try {
+      debugPrint("Account_Controller.navigateToStripeDashboard called for company ID: $companyId");
+      
+      if (companyId.isEmpty) {
+        debugPrint("Company ID is required to navigate to Stripe dashboard");
+        return;
+      }
+
+      final returnURL = '${ApiSettings.domainBaseUrl}/dashboard';
+      final refreshURL = '${ApiSettings.domainBaseUrl}/';
+
+      final url = await PaymentsAPI.postPaymentAccount(
+        companyId,
+        returnURL,
+        refreshURL,
+      );
+
+      if (url != null && url.isNotEmpty) {
+        debugPrint("Opening Stripe dashboard URL in new tab");
+        await launchUrlString(url, webOnlyWindowName: '_blank');
+      } else {
+        debugPrint("Failed to generate Stripe dashboard URL");
+      }
+    } catch (e) {
+      debugPrint("Error in navigateToStripeDashboard: $e");
     }
   }
 }
