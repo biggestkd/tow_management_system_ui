@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.6.0
+* Add Scheduling flow for new tow bookings
+
 ## 0.5.0
 * Update Payment Information tab in account screen to navigate to Stripe dashboard.
 

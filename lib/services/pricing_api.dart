@@ -83,30 +83,5 @@ class PricingAPI {
       return false;
     }
   }
-
-  // Legacy methods for backwards compatibility - deprecated
-  /// @deprecated Use getPricesByCompanyId instead
-  static Future<List<Pricing>?> getPricingByAccountId(String accountId) async {
-    debugPrint("Warning: getPricingByAccountId is deprecated. Use getPricesByCompanyId with companyId instead.");
-    // This method is kept for backwards compatibility but should be replaced
-    return getPricesByCompanyId(accountId);
-  }
-
-  /// @deprecated Use putPrices instead
-  static Future<Pricing?> updatePricing(Pricing pricing) async {
-    debugPrint("Warning: updatePricing is deprecated. Use putPrices instead.");
-    final success = await putPrices([pricing]);
-    return success ? pricing : null;
-  }
-
-  /// @deprecated Use putPrices instead
-  static Future<Pricing?> createPricing(Pricing pricing) async {
-    debugPrint("Warning: createPricing is deprecated. Use putPrices instead.");
-    final success = await putPrices([pricing]);
-    if (success) {
-      return pricing;
-    }
-    return null;
-  }
 }
 
