@@ -82,6 +82,37 @@ class TowAPI {
     }
   }
 
+  /// Create a new tow
+  /// Endpoint: POST /tows
+  /// Response: 201 Tow | other -> null
+  static Future<Tow?> postTow(Tow tow) async {
+    final uri = Uri.parse(towBaseUrl);
+    debugPrint("Creating tow: ${jsonEncode(tow.toJson())}");
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(tow.toJson()),
+      );
+
+      if (response.statusCode == 201) {
+        // API typically returns the created tow with generated ID
+        if (response.body.isNotEmpty) {
+          final decodedBody = jsonDecode(response.body);
+          return Tow.fromJson(decodedBody);
+        }
+        return tow;
+      } else {
+        debugPrint("Failed to create tow. ${response.statusCode} - ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Error creating tow: $e");
+      return null;
+    }
+  }
+
   /// Update a tow by its ID
   /// Endpoint: PUT /tows/:towId
   /// Response: 200/204 Tow (echoed or persisted) | other -> null

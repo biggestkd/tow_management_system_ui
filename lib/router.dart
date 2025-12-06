@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:tow_management_system_ui/views/dashboard/dashboard_screen.dart';
 import 'package:tow_management_system_ui/views/login/login_screen.dart';
 import 'package:tow_management_system_ui/views/account/account_screen.dart';
-import 'package:tow_management_system_ui/views/scheduling/schedule_form.dart';
+import 'package:tow_management_system_ui/views/scheduling/schedule_tow_screen.dart';
 import '../views/onboarding/onboarding_screen.dart';
 
 final router = GoRouter(
