@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/tow.dart';
+import '../../utilities/money.dart';
 
 class SummarySection extends StatelessWidget {
   const SummarySection({
@@ -15,7 +16,7 @@ class SummarySection extends StatelessWidget {
 
     final amount = tow.price;
     final amountText =
-    amount == null ? '—' : '\$${amount.toStringAsFixed(2)}';
+    amount == null ? '—' : centsToDollars(amount);
 
     final status = (tow.status ?? '').toLowerCase();
     final isPaid = status == 'paid' || status == 'completed_paid';
