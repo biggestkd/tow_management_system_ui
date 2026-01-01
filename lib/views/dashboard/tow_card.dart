@@ -88,7 +88,7 @@ class TowCard extends StatelessWidget {
                 ],
                 OutlinedButton.icon(
                   onPressed: onEditPressed,
-                  icon: const Icon(Icons.edit, size: 16),
+                  icon: const Icon(Icons.visibility, size: 16),
                   label: const Text('View'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.black87,
