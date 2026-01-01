@@ -82,14 +82,14 @@ class SchedulingController {
     }
 
     try {
-      final total = await PaymentsAPI.getTotalAmount(
-        companyId.trim(),
-        pickup.trim(),
-        dropoff.trim(),
+      final estimate = await TowAPI.getTowEstimate(
+        pickup: pickup.trim(),
+        dropoff: dropoff.trim(),
+        company: companyId.trim(),
       );
 
-      if (total != null) {
-        return total;
+      if (estimate != null) {
+        return estimate;
       } else {
         debugPrint("Failed to calculate tow price.");
         return 0;
