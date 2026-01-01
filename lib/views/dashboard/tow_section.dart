@@ -83,7 +83,6 @@ class _TowsSectionState extends State<TowsSection> {
                 vehicle: _vehicleString(tow),
                 driverName: tow.primaryContact ?? '',
                 driverPhone: null,
-                notes: tow.notes ?? '',
                 onEditPressed: () => _showTowModal(context, tow),
               );
             },

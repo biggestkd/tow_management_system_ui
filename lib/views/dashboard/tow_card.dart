@@ -13,7 +13,6 @@ class TowCard extends StatelessWidget {
     required this.vehicle,
     required this.driverName,
     this.driverPhone,
-    this.notes,
   });
 
   final String status;
