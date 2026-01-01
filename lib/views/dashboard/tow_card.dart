@@ -26,7 +26,6 @@ class TowCard extends StatelessWidget {
   final String vehicle;
   final String driverName;
   final String? driverPhone;
-  final String? notes;
 
   bool get _isActive => status.toLowerCase() == 'active';
   bool get _isCompleted => status.toLowerCase() == 'completed';
