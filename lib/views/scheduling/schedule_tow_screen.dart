@@ -40,6 +40,7 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
 
   var currentStep = 0;
   int total = 0;
+  int? estimate; // Store the estimate value from calculateTowPrice
 
   @override
   void initState() {
@@ -172,18 +173,20 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
           onPrimary: () async {
             debugPrint('Validate Location ${_pickupController.text}');
             
-            // TODO: Extract companyId from companyUrl or add as parameter
-            // For now using empty string - this needs to be fixed
+            // companyUrl parameter from the route is actually the companyId
             final companyId = widget.companyUrl ?? '';
             
-            final calculatedTotal = await SchedulingController.calculateTowPrice(
+            // Calculate tow price estimate
+            final calculatedEstimate = await SchedulingController.calculateTowPrice(
               pickup: _pickupController.text,
               dropoff: _destinationController.text,
               companyId: companyId,
             );
             
+            // Store the estimate value
             setState(() {
-              total = calculatedTotal;
+              estimate = calculatedEstimate;
+              total = calculatedEstimate;
             });
             
             _goToStep(1);
