@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tow_management_system_ui/views/scheduling/vehicle_section_input.dart';
 import '../../models/tow.dart';
+import '../../models/vehicle.dart';
 import '../../controllers/scheduling_controller.dart';
 import 'bottom_bar_input.dart';
 import 'locations_section_input.dart';
@@ -41,6 +42,12 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
   var currentStep = 0;
   int total = 0;
   int? estimate; // Store the estimate value from calculateTowPrice
+  
+  // Validation error messages
+  String? _firstNameError;
+  String? _lastNameError;
+  String? _phoneError;
+  String? _emailError;
 
   @override
   void initState() {
@@ -155,6 +162,10 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               lastNameController: _lastNameController,
               phoneController: _phoneController,
               emailController: _emailController,
+              firstNameError: _firstNameError,
+              lastNameError: _lastNameError,
+              phoneError: _phoneError,
+              emailError: _emailError,
             ),
           ],
         );
@@ -208,11 +219,97 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
           cancelText: 'Back',
           primaryText: 'Confirm and request',
           onCancel: () {
+            // Clear errors when going back
+            setState(() {
+              _firstNameError = null;
+              _lastNameError = null;
+              _phoneError = null;
+              _emailError = null;
+            });
             _goToStep(1);
           },
-          onPrimary: () {
-            // TODO: Implement confirm and request logic
-            debugPrint('Confirm and request pressed');
+          onPrimary: () async {
+            // Validate all fields have at least 2 characters
+            final firstName = _firstNameController.text.trim();
+            final lastName = _lastNameController.text.trim();
+            final phone = _phoneController.text.trim();
+            final email = _emailController.text.trim();
+            
+            bool isValid = true;
+            
+            // Clear previous errors
+            setState(() {
+              _firstNameError = null;
+              _lastNameError = null;
+              _phoneError = null;
+              _emailError = null;
+            });
+            
+            // Validate first name
+            if (firstName.length < 2) {
+              _firstNameError = 'First name must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Validate last name
+            if (lastName.length < 2) {
+              _lastNameError = 'Last name must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Validate phone
+            if (phone.length < 2) {
+              _phoneError = 'Phone must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Validate email (required and at least 2 characters)
+            if (email.length < 2) {
+              _emailError = 'Email is required and must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Update state to show errors if validation failed
+            if (!isValid) {
+              setState(() {
+                // Errors are already set above
+              });
+              debugPrint('Validation failed - missing required fields');
+              return;
+            }
+            
+            // All validation passed - proceed with controller call
+            final companyId = widget.companyUrl ?? '';
+            
+            // Build vehicle object
+            final vehicle = Vehicle(
+              year: _yearController.text.trim().isEmpty ? null : _yearController.text.trim(),
+              make: _makeController.text.trim().isEmpty ? null : _makeController.text.trim(),
+              model: _modelController.text.trim().isEmpty ? null : _modelController.text.trim(),
+            );
+            
+            // Format primary contact (email is required, so use it)
+            final primaryContact = email;
+            
+            // Submit the tow request
+            final result = await SchedulingController.submitTowRequest(
+              pickup: _pickupController.text.trim(),
+              destination: _destinationController.text.trim().isEmpty 
+                  ? null 
+                  : _destinationController.text.trim(),
+              vehicle: vehicle,
+              primaryContact: primaryContact,
+              companyId: companyId,
+            );
+            
+            if (result != null) {
+              debugPrint('Tow request submitted successfully');
+              if (widget.onSubmit != null) {
+                widget.onSubmit!(result);
+              }
+            } else {
+              debugPrint('Failed to submit tow request');
+            }
           },
         );
       default:
