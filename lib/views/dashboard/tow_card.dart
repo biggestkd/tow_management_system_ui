@@ -165,22 +165,6 @@ class TowCard extends StatelessWidget {
               },
             ),
           ),
-
-          Divider(height: 1, color: Colors.black.withOpacity(.08)),
-
-          // Notes
-          Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 24.0, vertical: 18.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Label('Notes'),
-                const SizedBox(height: 8),
-                _ValueText(notes ?? '—'),
-              ],
-            ),
-          ),
         ],
       ),
     );
