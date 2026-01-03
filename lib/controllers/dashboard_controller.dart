@@ -111,6 +111,11 @@ class DashboardController {
     await Clipboard.setData(ClipboardData(text: '${ApiSettings.domainBaseUrl}/schedule-tow/$link'));
   }
 
+  /// Copies the provided location to the system clipboard.
+  static Future<void> copyLocationToClipboard(String location) async {
+    await Clipboard.setData(ClipboardData(text: location));
+  }
+
   /// Signs out the current user and navigates to the login screen.
   static Future<void> logoutUser() async {
     try {

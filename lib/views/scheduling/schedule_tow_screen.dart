@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tow_management_system_ui/views/scheduling/vehicle_section_input.dart';
 import '../../models/tow.dart';
+import '../../models/vehicle.dart';
+import '../../models/primary_contact.dart';
 import '../../controllers/scheduling_controller.dart';
 import 'bottom_bar_input.dart';
 import 'locations_section_input.dart';
 import 'estimate_section.dart';
 import 'driver_input_section.dart';
+import 'confirmation_section.dart';
 
 class ScheduleTowScreen extends StatefulWidget {
   final String? companyUrl;
@@ -40,6 +44,17 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
 
   var currentStep = 0;
   int total = 0;
+  int? estimate; // Store the estimate value from calculateTowPrice
+  
+  // Validation error messages
+  String? _firstNameError;
+  String? _lastNameError;
+  String? _phoneError;
+  String? _emailError;
+  
+  // Submission result
+  bool? _submissionSuccess;
+  String? _submissionErrorMessage;
 
   @override
   void initState() {
@@ -154,8 +169,45 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               lastNameController: _lastNameController,
               phoneController: _phoneController,
               emailController: _emailController,
+              firstNameError: _firstNameError,
+              lastNameError: _lastNameError,
+              phoneError: _phoneError,
+              emailError: _emailError,
             ),
           ],
+        );
+
+      case 3:
+        return ConfirmationSection(
+          isSuccess: _submissionSuccess == true,
+          errorMessage: _submissionErrorMessage,
+          onScheduleAnother: () {
+            // Reset form and go back to step 0
+            setState(() {
+              currentStep = 0;
+              _submissionSuccess = null;
+              _submissionErrorMessage = null;
+              // Clear form fields
+              _pickupController.clear();
+              _destinationController.clear();
+              _yearController.clear();
+              _makeController.clear();
+              _modelController.clear();
+              _firstNameController.clear();
+              _lastNameController.clear();
+              _phoneController.clear();
+              _emailController.clear();
+              _firstNameError = null;
+              _lastNameError = null;
+              _phoneError = null;
+              _emailError = null;
+              total = 0;
+              estimate = null;
+            });
+          },
+          onGoToDashboard: () {
+            context.go('/dashboard');
+          },
         );
 
       default:
@@ -172,18 +224,20 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
           onPrimary: () async {
             debugPrint('Validate Location ${_pickupController.text}');
             
-            // TODO: Extract companyId from companyUrl or add as parameter
-            // For now using empty string - this needs to be fixed
+            // companyUrl parameter from the route is actually the companyId
             final companyId = widget.companyUrl ?? '';
             
-            final calculatedTotal = await SchedulingController.calculateTowPrice(
+            // Calculate tow price estimate
+            final calculatedEstimate = await SchedulingController.calculateTowPrice(
               pickup: _pickupController.text,
               dropoff: _destinationController.text,
               companyId: companyId,
             );
             
+            // Store the estimate value
             setState(() {
-              total = calculatedTotal;
+              estimate = calculatedEstimate;
+              total = calculatedEstimate;
             });
             
             _goToStep(1);
@@ -205,13 +259,115 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
           cancelText: 'Back',
           primaryText: 'Confirm and request',
           onCancel: () {
+            // Clear errors when going back
+            setState(() {
+              _firstNameError = null;
+              _lastNameError = null;
+              _phoneError = null;
+              _emailError = null;
+            });
             _goToStep(1);
           },
-          onPrimary: () {
-            // TODO: Implement confirm and request logic
-            debugPrint('Confirm and request pressed');
+          onPrimary: () async {
+            // Validate all fields have at least 2 characters
+            final firstName = _firstNameController.text.trim();
+            final lastName = _lastNameController.text.trim();
+            final phone = _phoneController.text.trim();
+            final email = _emailController.text.trim();
+            
+            bool isValid = true;
+            
+            // Clear previous errors
+            setState(() {
+              _firstNameError = null;
+              _lastNameError = null;
+              _phoneError = null;
+              _emailError = null;
+            });
+            
+            // Validate first name
+            if (firstName.length < 2) {
+              _firstNameError = 'First name must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Validate last name
+            if (lastName.length < 2) {
+              _lastNameError = 'Last name must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Validate phone
+            if (phone.length < 2) {
+              _phoneError = 'Phone must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Validate email (required and at least 2 characters)
+            if (email.length < 2) {
+              _emailError = 'Email is required and must be at least 2 characters';
+              isValid = false;
+            }
+            
+            // Update state to show errors if validation failed
+            if (!isValid) {
+              setState(() {
+                // Errors are already set above
+              });
+              debugPrint('Validation failed - missing required fields');
+              return;
+            }
+            
+            // All validation passed - proceed with controller call
+            final schedulingLink = widget.companyUrl ?? '';
+            
+            // Build vehicle object
+            final vehicle = Vehicle(
+              year: _yearController.text.trim().isEmpty ? null : _yearController.text.trim(),
+              make: _makeController.text.trim().isEmpty ? null : _makeController.text.trim(),
+              model: _modelController.text.trim().isEmpty ? null : _modelController.text.trim(),
+            );
+            
+            // Build primary contact object
+            final primaryContact = PrimaryContact(
+              firstName: firstName.isEmpty ? null : firstName,
+              lastName: lastName.isEmpty ? null : lastName,
+              email: email.isEmpty ? null : email,
+              phone: phone.isEmpty ? null : phone,
+            );
+            
+            // Submit the tow request
+            final result = await SchedulingController.submitTowRequest(
+              pickup: _pickupController.text.trim(),
+              destination: _destinationController.text.trim().isEmpty 
+                  ? null 
+                  : _destinationController.text.trim(),
+              vehicle: vehicle,
+              primaryContact: primaryContact,
+              schedulingLink: schedulingLink,
+            );
+            
+            // Navigate to step 4 (confirmation step)
+            setState(() {
+              if (result != null) {
+                _submissionSuccess = true;
+                _submissionErrorMessage = null;
+                debugPrint('Tow request submitted successfully');
+                if (widget.onSubmit != null) {
+                  widget.onSubmit!(result);
+                }
+              } else {
+                _submissionSuccess = false;
+                _submissionErrorMessage = 'Failed to submit tow request. Please try again.';
+                debugPrint('Failed to submit tow request');
+              }
+              currentStep = 3; // Navigate to step 4 (0-indexed, so step 3)
+            });
           },
         );
+      case 3:
+        // Step 4 (confirmation) - no bottom bar needed
+        return const SizedBox.shrink();
       default:
         return const SizedBox.shrink();
     }

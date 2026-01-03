@@ -148,4 +148,65 @@ class TowAPI {
       return null;
     }
   }
+
+  /// Get tow estimate based on pickup, dropoff, and company
+  /// Endpoint: GET /tows/estimates?pickup=...&dropoff=...&company=...
+  /// Response: 200 { "estimate": int } | other -> null
+  /// Returns the estimate in cents, or null on failure
+  static Future<int?> getTowEstimate({
+    required String pickup,
+    required String dropoff,
+    required String company,
+  }) async {
+    if (pickup.trim().isEmpty || dropoff.trim().isEmpty || company.trim().isEmpty) {
+      debugPrint("Pickup, dropoff, and company are required to get tow estimate.");
+      return null;
+    }
+
+    final uri = Uri.parse('$towBaseUrl/estimates').replace(
+      queryParameters: {
+        'pickup': pickup.trim(),
+        'dropoff': dropoff.trim(),
+        'company': company.trim(),
+      },
+    );
+    debugPrint("Fetching tow estimate for pickup: $pickup, dropoff: $dropoff, company: $company");
+
+    try {
+      final response = await http.get(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        if (response.body.isNotEmpty) {
+          final decodedBody = jsonDecode(response.body) as Map<String, dynamic>;
+          final estimate = decodedBody['estimate'];
+          if (estimate != null) {
+            // Handle both int and string representations of integers
+            final estimateInt = estimate is int ? estimate : int.tryParse(estimate.toString());
+            if (estimateInt != null) {
+              debugPrint("Tow estimate retrieved successfully: $estimateInt");
+              return estimateInt;
+            } else {
+              debugPrint("Invalid estimate format in response.");
+              return null;
+            }
+          } else {
+            debugPrint("Missing estimate field in response.");
+            return null;
+          }
+        } else {
+          debugPrint("Empty response body for tow estimate.");
+          return null;
+        }
+      } else {
+        debugPrint("Failed to fetch tow estimate. ${response.statusCode} - ${response.body}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("Error fetching tow estimate: $e");
+      return null;
+    }
+  }
 }

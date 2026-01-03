@@ -13,7 +13,6 @@ class TowCard extends StatelessWidget {
     required this.vehicle,
     required this.driverName,
     this.driverPhone,
-    this.notes,
   });
 
   final String status;
@@ -26,7 +25,6 @@ class TowCard extends StatelessWidget {
   final String vehicle;
   final String driverName;
   final String? driverPhone;
-  final String? notes;
 
   bool get _isActive => status.toLowerCase() == 'active';
   bool get _isCompleted => status.toLowerCase() == 'completed';
@@ -163,22 +161,6 @@ class TowCard extends StatelessWidget {
                   );
                 }
               },
-            ),
-          ),
-
-          Divider(height: 1, color: Colors.black.withOpacity(.08)),
-
-          // Notes
-          Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 24.0, vertical: 18.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _Label('Notes'),
-                const SizedBox(height: 8),
-                _ValueText(notes ?? '—'),
-              ],
             ),
           ),
         ],

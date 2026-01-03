@@ -7,15 +7,15 @@ class LocationAPI {
   static final String baseUrl = '${ApiSettings.apiBaseUrl}/locations';
 
   /// Get addresses for a given address query
-  /// Endpoint: GET /location?address={address}
-  /// Response: 200 dynamic | other -> null
+  /// Endpoint: GET /locations/suggest?query={address}
+  /// Response: 200 {"suggestions": [String]} | other -> []
   static Future<List<String>> getAddresses(String address) async {
     if (address.isEmpty) {
       debugPrint("Address is required to fetch addresses.");
       return [];
     }
 
-    final uri = Uri.parse(baseUrl).replace(queryParameters: {'address': address});
+    final uri = Uri.parse('$baseUrl/suggest').replace(queryParameters: {'query': address});
     debugPrint("Fetching addresses for: $address");
 
     try {
@@ -27,8 +27,14 @@ class LocationAPI {
       if (response.statusCode == 200) {
         final decodedBody = jsonDecode(response.body);
 
-        if (decodedBody is List) {
-          return decodedBody.map((e) => e.toString()).toList();
+        if (decodedBody is Map<String, dynamic> && decodedBody.containsKey('suggestions')) {
+          final suggestions = decodedBody['suggestions'];
+          if (suggestions is List) {
+            return suggestions.map((e) => e.toString()).toList();
+          } else {
+            debugPrint("Unexpected suggestions format: $suggestions");
+            return [];
+          }
         } else {
           debugPrint("Unexpected response format: $decodedBody");
           return [];

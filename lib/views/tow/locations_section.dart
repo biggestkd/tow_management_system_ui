@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/tow.dart';
+import '../../controllers/dashboard_controller.dart';
 
 class LocationsSection extends StatelessWidget {
   const LocationsSection({
@@ -163,29 +164,12 @@ class _LocationFieldState extends State<_LocationField> {
               ),
               onPressed: hasValue
                   ? () {
-                      // TODO: Copy to clipboard
+                      DashboardController.copyLocationToClipboard(widget.controller.text);
                     }
                   : null,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               tooltip: 'Copy',
-            ),
-            const SizedBox(width: 4),
-            // Map icon button (outside white container)
-            IconButton(
-              icon: Icon(
-                Icons.map_outlined,
-                size: 20,
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-              onPressed: hasValue
-                  ? () {
-                      // TODO: Open in map
-                    }
-                  : null,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              tooltip: 'View on map',
             ),
           ],
         ),

@@ -1,11 +1,12 @@
 import 'vehicle.dart';
+import 'primary_contact.dart';
 
 class Tow {
   final String? id;
   final String? destination;
   final String? pickup;
   final Vehicle? vehicle;
-  final String? primaryContact;
+  final PrimaryContact? primaryContact;
   final List<String>? attachments;
   final String? notes;
   final List<String>? history;
@@ -35,7 +36,9 @@ class Tow {
       destination: json['destination'],
       pickup: json['pickup'],
       vehicle: _parseVehicle(json['vehicle']),
-      primaryContact: json['primaryContact'],
+      primaryContact: json['primaryContact'] != null
+          ? PrimaryContact.fromJson(json['primaryContact'] as Map<String, dynamic>)
+          : null,
       attachments: json['attachments'] != null
           ? List<String>.from(json['attachments'])
           : [],
@@ -59,7 +62,7 @@ class Tow {
     if (destination != null) 'destination': destination,
     if (pickup != null) 'pickup': pickup,
     if (vehicle != null) 'vehicle': vehicle!.toJson(),
-    if (primaryContact != null) 'primaryContact': primaryContact,
+    if (primaryContact != null) 'primaryContact': primaryContact!.toJson(),
     if (attachments != null) 'attachments': attachments,
     if (notes != null) 'notes': notes,
     if (history != null) 'history': history,

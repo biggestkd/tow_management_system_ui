@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/tow.dart';
 import '../models/vehicle.dart';
+import '../models/primary_contact.dart';
 import '../service_configurations.dart';
 import '../services/tow_api.dart';
 import '../services/location_api.dart';
@@ -12,9 +13,14 @@ class SchedulingController {
 
   /// Submits a completed request for scheduling a tow.
   /// Returns the created Tow object on success, null on failure.
-  static Future<Tow?> submitTowRequest({required String pickup, String? destination, Vehicle? vehicle, String? primaryContact, String? companyId,}) async {
+  static Future<Tow?> submitTowRequest({required String pickup, String? destination, Vehicle? vehicle, PrimaryContact? primaryContact, required String schedulingLink,}) async {
     if (pickup.trim().isEmpty) {
       debugPrint("Pickup location is required to submit tow request.");
+      return null;
+    }
+
+    if (schedulingLink.trim().isEmpty) {
+      debugPrint("Scheduling link is required to submit tow request.");
       return null;
     }
 
@@ -24,14 +30,13 @@ class SchedulingController {
         pickup: pickup.trim(),
         destination: destination?.trim().isEmpty == true ? null : destination?.trim(),
         vehicle: vehicle,
-        primaryContact: primaryContact?.trim().isEmpty == true ? null : primaryContact?.trim(),
+        primaryContact: primaryContact?.isEmpty == true ? null : primaryContact,
         status: 'pending',
-        companyId: companyId,
       );
 
       debugPrint("Submitting tow request: ${tow.toJson()}");
 
-      final created = await TowAPI.postTow(tow);
+      final created = await TowAPI.postTow(tow, schedulingLink.trim());
       
       if (created != null) {
         debugPrint("Tow request submitted successfully.");
@@ -82,14 +87,14 @@ class SchedulingController {
     }
 
     try {
-      final total = await PaymentsAPI.getTotalAmount(
-        companyId.trim(),
-        pickup.trim(),
-        dropoff.trim(),
+      final estimate = await TowAPI.getTowEstimate(
+        pickup: pickup.trim(),
+        dropoff: dropoff.trim(),
+        company: companyId.trim(),
       );
 
-      if (total != null) {
-        return total;
+      if (estimate != null) {
+        return estimate;
       } else {
         debugPrint("Failed to calculate tow price.");
         return 0;

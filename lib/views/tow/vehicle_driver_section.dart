@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/tow.dart';
+import '../../models/primary_contact.dart';
 
 class VehicleDriverSection extends StatelessWidget {
   const VehicleDriverSection({
@@ -28,12 +29,12 @@ class VehicleDriverSection extends StatelessWidget {
           label: 'Vehicle',
           value: _vehicleDisplay(tow),
         ),
-        if (tow.primaryContact != null) ...[
+        if (tow.primaryContact != null && !tow.primaryContact!.isEmpty) ...[
           const SizedBox(height: 16),
           _InfoItem(
             icon: Icons.person,
             label: 'Primary Contact',
-            value: tow.primaryContact!,
+            value: _formatPrimaryContact(tow.primaryContact!),
           ),
         ],
       ],
@@ -49,6 +50,20 @@ String _vehicleDisplay(Tow tow) {
       .map((p) => p!.trim())
       .toList();
   return parts.isEmpty ? '—' : parts.join(' ');
+}
+
+String _formatPrimaryContact(PrimaryContact contact) {
+  final parts = <String>[];
+  if (contact.fullName.isNotEmpty) {
+    parts.add(contact.fullName);
+  }
+  if (contact.email != null && contact.email!.trim().isNotEmpty) {
+    parts.add(contact.email!);
+  }
+  if (contact.phone != null && contact.phone!.trim().isNotEmpty) {
+    parts.add(contact.phone!);
+  }
+  return parts.isEmpty ? '—' : parts.join(' • ');
 }
 
 class _InfoItem extends StatelessWidget {

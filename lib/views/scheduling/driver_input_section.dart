@@ -7,12 +7,20 @@ class DriverInputSection extends StatelessWidget {
     required this.lastNameController,
     required this.phoneController,
     required this.emailController,
+    this.firstNameError,
+    this.lastNameError,
+    this.phoneError,
+    this.emailError,
   });
 
   final TextEditingController firstNameController;
   final TextEditingController lastNameController;
   final TextEditingController phoneController;
   final TextEditingController emailController;
+  final String? firstNameError;
+  final String? lastNameError;
+  final String? phoneError;
+  final String? emailError;
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +52,7 @@ class DriverInputSection extends StatelessWidget {
             controller: firstNameController,
             icon: Icons.person_outline,
             textInputAction: TextInputAction.next,
+            errorText: firstNameError,
           ),
           const SizedBox(height: 12),
           _DriverField(
@@ -51,6 +60,7 @@ class DriverInputSection extends StatelessWidget {
             controller: lastNameController,
             icon: Icons.person_outline,
             textInputAction: TextInputAction.next,
+            errorText: lastNameError,
           ),
           const SizedBox(height: 12),
           _DriverField(
@@ -59,15 +69,17 @@ class DriverInputSection extends StatelessWidget {
             icon: Icons.phone_outlined,
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.next,
+            errorText: phoneError,
           ),
           const SizedBox(height: 12),
           _DriverField(
-            label: 'Email',
+            label: 'Email *',
             controller: emailController,
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
-            hintText: 'Optional',
+            errorText: emailError,
+            isRequired: true,
           ),
         ],
       ),
@@ -83,6 +95,8 @@ class _DriverField extends StatelessWidget {
     this.keyboardType,
     this.textInputAction,
     this.hintText,
+    this.errorText,
+    this.isRequired = false,
   });
 
   final String label;
@@ -91,11 +105,15 @@ class _DriverField extends StatelessWidget {
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
   final String? hintText;
+  final String? errorText;
+  final bool isRequired;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final hasError = errorText != null && errorText!.isNotEmpty;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -113,8 +131,10 @@ class _DriverField extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: theme.dividerColor.withOpacity(0.2),
-              width: 1,
+              color: hasError
+                  ? theme.colorScheme.error
+                  : theme.dividerColor.withOpacity(0.2),
+              width: hasError ? 1.5 : 1,
             ),
           ),
           child: Row(
@@ -122,7 +142,9 @@ class _DriverField extends StatelessWidget {
               Icon(
                 icon,
                 size: 20,
-                color: theme.colorScheme.onSurfaceVariant,
+                color: hasError
+                    ? theme.colorScheme.error
+                    : theme.colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -151,6 +173,16 @@ class _DriverField extends StatelessWidget {
             ],
           ),
         ),
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Text(
+            errorText!,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.error,
+              fontSize: 12,
+            ),
+          ),
+        ],
       ],
     );
   }
