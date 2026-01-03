@@ -83,10 +83,10 @@ class TowAPI {
   }
 
   /// Create a new tow
-  /// Endpoint: POST /tows
+  /// Endpoint: POST /tows/:schedulingLink
   /// Response: 201 Tow | other -> null
-  static Future<Tow?> postTow(Tow tow) async {
-    final uri = Uri.parse(towBaseUrl);
+  static Future<Tow?> postTow(Tow tow, String schedulingLink) async {
+    final uri = Uri.parse('$towBaseUrl/$schedulingLink');
     debugPrint("Creating tow: ${jsonEncode(tow.toJson())}");
 
     try {
@@ -153,11 +153,7 @@ class TowAPI {
   /// Endpoint: GET /tows/estimates?pickup=...&dropoff=...&company=...
   /// Response: 200 { "estimate": int } | other -> null
   /// Returns the estimate in cents, or null on failure
-  static Future<int?> getTowEstimate({
-    required String pickup,
-    required String dropoff,
-    required String company,
-  }) async {
+  static Future<int?> getTowEstimate({required String pickup, required String dropoff, required String company,}) async {
     if (pickup.trim().isEmpty || dropoff.trim().isEmpty || company.trim().isEmpty) {
       debugPrint("Pickup, dropoff, and company are required to get tow estimate.");
       return null;
