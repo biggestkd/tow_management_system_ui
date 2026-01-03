@@ -17,10 +17,10 @@ class DriverSection extends StatelessWidget {
 
     final theme = Theme.of(context);
     
-    // Parse primary contact - assume format might be "Name - Phone" or just "Name"
-    final contactParts = _parseContact(tow.primaryContact!);
-    final driverName = contactParts['name'] ?? tow.primaryContact!;
-    final phoneNumber = contactParts['phone']?.isNotEmpty == true ? contactParts['phone'] : null;
+    // Use primary contact fields directly
+    final contact = tow.primaryContact!;
+    final driverName = contact.fullName.isNotEmpty ? contact.fullName : (contact.email ?? '');
+    final phoneNumber = contact.phone;
 
     return Container(
       width: double.infinity,
@@ -119,37 +119,6 @@ class DriverSection extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Map<String, String?> _parseContact(String contact) {
-    // Try to parse "Name - Phone" or "Name (Phone)" format
-    final dashMatch = RegExp(r'^(.+?)\s*-\s*(.+)$').firstMatch(contact.trim());
-    if (dashMatch != null) {
-      return {
-        'name': dashMatch.group(1)?.trim() ?? contact,
-        'phone': dashMatch.group(2)?.trim(),
-      };
-    }
-    
-    final parenMatch = RegExp(r'^(.+?)\s*\((.+?)\)$').firstMatch(contact.trim());
-    if (parenMatch != null) {
-      return {
-        'name': parenMatch.group(1)?.trim() ?? contact,
-        'phone': parenMatch.group(2)?.trim(),
-      };
-    }
-    
-    // Check if it's a phone number format
-    final phonePattern = RegExp(r'\(?\d{3}\)?\s*-?\s*\d{3}\s*-?\s*\d{4}');
-    if (phonePattern.hasMatch(contact)) {
-      return {
-        'name': '',
-        'phone': contact.trim(),
-      };
-    }
-    
-    // Default: treat as name
-    return {'name': contact.trim(), 'phone': null};
   }
 }
 

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:tow_management_system_ui/views/scheduling/vehicle_section_input.dart';
 import '../../models/tow.dart';
 import '../../models/vehicle.dart';
+import '../../models/primary_contact.dart';
 import '../../controllers/scheduling_controller.dart';
 import 'bottom_bar_input.dart';
 import 'locations_section_input.dart';
 import 'estimate_section.dart';
 import 'driver_input_section.dart';
+import 'confirmation_section.dart';
 
 class ScheduleTowScreen extends StatefulWidget {
   final String? companyUrl;
@@ -48,6 +51,10 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
   String? _lastNameError;
   String? _phoneError;
   String? _emailError;
+  
+  // Submission result
+  bool? _submissionSuccess;
+  String? _submissionErrorMessage;
 
   @override
   void initState() {
@@ -170,6 +177,39 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
           ],
         );
 
+      case 3:
+        return ConfirmationSection(
+          isSuccess: _submissionSuccess == true,
+          errorMessage: _submissionErrorMessage,
+          onScheduleAnother: () {
+            // Reset form and go back to step 0
+            setState(() {
+              currentStep = 0;
+              _submissionSuccess = null;
+              _submissionErrorMessage = null;
+              // Clear form fields
+              _pickupController.clear();
+              _destinationController.clear();
+              _yearController.clear();
+              _makeController.clear();
+              _modelController.clear();
+              _firstNameController.clear();
+              _lastNameController.clear();
+              _phoneController.clear();
+              _emailController.clear();
+              _firstNameError = null;
+              _lastNameError = null;
+              _phoneError = null;
+              _emailError = null;
+              total = 0;
+              estimate = null;
+            });
+          },
+          onGoToDashboard: () {
+            context.go('/dashboard');
+          },
+        );
+
       default:
         return const SizedBox.shrink();
     }
@@ -279,7 +319,7 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
             }
             
             // All validation passed - proceed with controller call
-            final companyId = widget.companyUrl ?? '';
+            final schedulingLink = widget.companyUrl ?? '';
             
             // Build vehicle object
             final vehicle = Vehicle(
@@ -288,8 +328,13 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               model: _modelController.text.trim().isEmpty ? null : _modelController.text.trim(),
             );
             
-            // Format primary contact (email is required, so use it)
-            final primaryContact = email;
+            // Build primary contact object
+            final primaryContact = PrimaryContact(
+              firstName: firstName.isEmpty ? null : firstName,
+              lastName: lastName.isEmpty ? null : lastName,
+              email: email.isEmpty ? null : email,
+              phone: phone.isEmpty ? null : phone,
+            );
             
             // Submit the tow request
             final result = await SchedulingController.submitTowRequest(
@@ -299,19 +344,30 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
                   : _destinationController.text.trim(),
               vehicle: vehicle,
               primaryContact: primaryContact,
-              companyId: companyId,
+              schedulingLink: schedulingLink,
             );
             
-            if (result != null) {
-              debugPrint('Tow request submitted successfully');
-              if (widget.onSubmit != null) {
-                widget.onSubmit!(result);
+            // Navigate to step 4 (confirmation step)
+            setState(() {
+              if (result != null) {
+                _submissionSuccess = true;
+                _submissionErrorMessage = null;
+                debugPrint('Tow request submitted successfully');
+                if (widget.onSubmit != null) {
+                  widget.onSubmit!(result);
+                }
+              } else {
+                _submissionSuccess = false;
+                _submissionErrorMessage = 'Failed to submit tow request. Please try again.';
+                debugPrint('Failed to submit tow request');
               }
-            } else {
-              debugPrint('Failed to submit tow request');
-            }
+              currentStep = 3; // Navigate to step 4 (0-indexed, so step 3)
+            });
           },
         );
+      case 3:
+        // Step 4 (confirmation) - no bottom bar needed
+        return const SizedBox.shrink();
       default:
         return const SizedBox.shrink();
     }
