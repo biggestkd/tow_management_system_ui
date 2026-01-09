@@ -1,0 +1,84 @@
+name: Deploy Flutter Web to S3 (Static Website Hosting)
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-flutter-web
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+      S3_BUCKET: ${{ vars.WEB_BUCKET_NAME }}
+
+      API_BASE_URL: http://localhost:8080
+      DOMAIN_BASE_URL: http://localhost:56914/#
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.24.5"
+          channel: "stable"
+          cache: true
+
+      - name: Flutter clean
+        run: flutter clean
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build Flutter web (release)
+        run: |
+          flutter build web --release \
+            --dart-define=API_BASE_URL=${API_BASE_URL} \
+            --dart-define=DOMAIN_BASE_URL=${DOMAIN_BASE_URL}
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GHA_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify bucket variable is set
+        run: |
+          test -n "${S3_BUCKET}" || (echo "Set vars.WEB_BUCKET_NAME to your target bucket name" && exit 1)
+
+      - name: Deploy to S3 (sync to bucket root)
+        run: |
+          aws s3 sync build/web "s3://${S3_BUCKET}/" \
+            --delete \
+            --exact-timestamps
+
+      - name: Set cache headers for static website hosting (recommended)
+        run: |
+          # Ensure index.html updates propagate immediately
+          aws s3 cp "s3://${S3_BUCKET}/index.html" "s3://${S3_BUCKET}/index.html" \
+            --metadata-directive REPLACE \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html"
+
+          # Aggressively cache fingerprinted assets
+          aws s3 cp build/web "s3://${S3_BUCKET}/" \
+            --recursive \
+            --exclude "index.html" \
+            --cache-control "public, max-age=31536000, immutable" \
+            --metadata-directive REPLACE
+
+      - name: Print website URL (informational)
+        run: |
+          echo "S3 static website endpoint format:"
+          echo "http://${S3_BUCKET}.s3-website-${AWS_REGION}.amazonaws.com"
