@@ -23,6 +23,7 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'development' }}
 
     env:
       AWS_REGION: us-east-1
