@@ -6,12 +6,11 @@ on:
       environment:
         description: "Deployment environment"
         required: true
-        default: "dev"
+        default: "development"
         type: choice
         options:
-          - dev
-          - stage
-          - prod
+          - development
+          - production
       bucket_name:
         description: "Globally unique S3 bucket name"
         required: true
@@ -27,7 +26,7 @@ jobs:
 
     env:
       AWS_REGION: us-east-1
-      STACK_NAME: public-data-bucket-${{ inputs.environment }}
+      STACK_NAME: tow-management-system-public-bucket-${{ inputs.environment }}
 
     steps:
       - name: Checkout
