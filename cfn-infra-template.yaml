@@ -7,8 +7,8 @@ Parameters:
     Description: Globally-unique S3 bucket name
   Environment:
     Type: String
-    Default: dev
-    AllowedValues: [dev, stage, prod]
+    Default: development
+    AllowedValues: [development, production]
 
 Resources:
   PublicDataBucket:
