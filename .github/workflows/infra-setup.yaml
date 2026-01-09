@@ -35,7 +35,7 @@ jobs:
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_GHA_ROLE_ARN }}
+          role-to-assume: ${{ secrets.GHA_RUNNER_ROLE }}
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Validate CloudFormation template
