@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.7.0
+* Add GHA and AWS resources for deployments. 
+
 ## 0.6.0
 * Add Scheduling flow for new tow bookings
 
