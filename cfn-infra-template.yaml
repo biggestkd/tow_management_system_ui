@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Public data S3 bucket (public GET for objects) deployed via GitHub Actions
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Globally-unique S3 bucket name
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, stage, prod]
+
+Resources:
+  PublicDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref BucketName
+
+      # Strongly recommended: don't use ACLs for public access; use policy instead
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+
+      # Encryption at rest (does not affect public GET)
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+      # Optional: basic versioning (helpful for data assets)
+      VersioningConfiguration:
+        Status: Enabled
+
+      # IMPORTANT: For a truly public bucket policy to work, you must allow public policies.
+      # This disables "BlockPublicPolicy" and "RestrictPublicBuckets".
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        IgnorePublicAcls: true
+        BlockPublicPolicy: false
+        RestrictPublicBuckets: false
+
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+
+  PublicDataBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref PublicDataBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: PublicReadGetObject
+            Effect: Allow
+            Principal: "*"
+            Action:
+              - "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${BucketName}/*"
+
+Outputs:
+  BucketName:
+    Value: !Ref PublicDataBucket
+  BucketArn:
+    Value: !GetAtt PublicDataBucket.Arn
+  PublicObjectUrlPrefix:
+    Value: !Sub "https://${BucketName}.s3.${AWS::Region}.amazonaws.com/"
