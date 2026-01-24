@@ -69,7 +69,6 @@ jobs:
           NEW_POOL_ID="$(
             aws cognito-idp create-user-pool \
               --pool-name "${USER_POOL_NAME}" \
-              --user-pool-tags "Environment=${ENVIRONMENT}" "ManagedBy=github-actions" \
               --query "UserPool.Id" \
               --output text
           )"
