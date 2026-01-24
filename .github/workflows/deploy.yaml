@@ -32,6 +32,9 @@ jobs:
       S3_BUCKET: ${{ vars.UI_PUBLIC_BUCKET_NAME }}
       API_BASE_URL: ${{ vars.API_BASE_URL }}
       DOMAIN_BASE_URL: ${{ vars.DOMAIN_BASE_URL }}
+      COGNITO_USER_POOL_ID: ${{ secrets.COGNITO_USER_POOL_ID }}
+      COGNITO_APP_CLIENT_ID: ${{ secrets.COGNITO_APP_CLIENT_ID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,6 +51,21 @@ jobs:
 
       - name: Flutter pub get
         run: flutter pub get
+
+      - name: Generate amplifyconfiguration.json for environment
+        run: |
+          set -euo pipefail
+          
+          test -n "${COGNITO_USER_POOL_ID}" || (echo "Missing COGNITO_USER_POOL_ID" && exit 1)
+          test -n "${COGNITO_APP_CLIENT_ID}" || (echo "Missing COGNITO_APP_CLIENT_ID" && exit 1)
+                    
+          sed -i \
+            -e "s|__COGNITO_USER_POOL_ID__|${COGNITO_USER_POOL_ID}|g" \
+            -e "s|__COGNITO_APP_CLIENT_ID__|${COGNITO_APP_CLIENT_ID}|g" \
+            -e "s|__AWS_REGION__|${AWS_REGION}|g" \
+            assets/amplify_configuration.json
+          
+          echo "Generated assets/amplify_configuration.json"
 
       - name: Build Flutter web (release)
         run: |
