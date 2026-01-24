@@ -1,0 +1,87 @@
+name: Create Cognito User Pool
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "development"
+        type: choice
+        options:
+          - development
+          - production
+      user_pool_name:
+        description: "Base user pool name (environment will be appended)"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  create-user-pool:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    env:
+      AWS_REGION: us-east-1
+      ENVIRONMENT: ${{ inputs.environment }}
+      USER_POOL_BASE_NAME: ${{ inputs.user_pool_name }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.GHA_RUNNER_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Create (or reuse) Cognito User Pool
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "${USER_POOL_BASE_NAME}" ]]; then
+            echo "Input 'user-pool-name' must not be empty" >&2
+            exit 1
+          fi
+
+          USER_POOL_NAME="${USER_POOL_BASE_NAME}-${ENVIRONMENT}"
+          echo "Target user pool name: ${USER_POOL_NAME}"
+
+          EXISTING_POOL_ID="$(
+            aws cognito-idp list-user-pools \
+              --max-results 60 \
+              --query "UserPools[?Name=='${USER_POOL_NAME}'].Id | [0]" \
+              --output text
+          )"
+
+          if [[ "${EXISTING_POOL_ID}" != "None" && -n "${EXISTING_POOL_ID}" ]]; then
+            echo "User pool already exists: ${EXISTING_POOL_ID}"
+            echo "USER_POOL_ID=${EXISTING_POOL_ID}" >> "${GITHUB_ENV}"
+            exit 0
+          fi
+
+          NEW_POOL_ID="$(
+            aws cognito-idp create-user-pool \
+              --pool-name "${USER_POOL_NAME}" \
+              --user-pool-tags "Environment=${ENVIRONMENT}" "ManagedBy=github-actions" \
+              --query "UserPool.Id" \
+              --output text
+          )"
+
+          echo "Created user pool: ${NEW_POOL_ID}"
+          echo "USER_POOL_ID=${NEW_POOL_ID}" >> "${GITHUB_ENV}"
+
+      - name: Describe user pool (informational)
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cognito-idp describe-user-pool \
+            --user-pool-id "${USER_POOL_ID}" \
+            --query "UserPool.{Id:Id,Name:Name,Status:Status,CreationDate:CreationDate,LastModifiedDate:LastModifiedDate}" \
+            --output table
