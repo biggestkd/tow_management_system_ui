@@ -69,6 +69,10 @@ jobs:
           NEW_POOL_ID="$(
             aws cognito-idp create-user-pool \
               --pool-name "${USER_POOL_NAME}" \
+              --username-attributes email \
+              --auto-verified-attributes email \
+              --username-configuration CaseSensitive=false \
+              --schema "Name=email,AttributeDataType=String,Mutable=true,Required=true" \
               --query "UserPool.Id" \
               --output text
           )"
@@ -88,7 +92,6 @@ jobs:
             --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH ALLOW_USER_SRP_AUTH \
             --prevent-user-existence-errors ENABLED \
             --region us-east-1
-
 
       - name: Describe user pool (informational)
         shell: bash
