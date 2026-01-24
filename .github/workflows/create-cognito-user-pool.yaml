@@ -76,6 +76,20 @@ jobs:
           echo "Created user pool: ${NEW_POOL_ID}"
           echo "USER_POOL_ID=${NEW_POOL_ID}" >> "${GITHUB_ENV}"
 
+      - name: Create the app client
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          aws cognito-idp create-user-pool-client \
+            --user-pool-id "${USER_POOL_ID}" \
+            --client-name tow-management-system-app-client \
+            --generate-secret false \
+            --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH ALLOW_USER_SRP_AUTH \
+            --prevent-user-existence-errors ENABLED \
+            --region us-east-1
+
+
       - name: Describe user pool (informational)
         shell: bash
         run: |
