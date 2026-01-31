@@ -6,11 +6,12 @@
 tow service operators to manage jobs and invoicing for their business.
 
 ## Getting Started
-To begin supporting, please familiarize yourself with the documentation below.
+Please familiarize yourself with the documentation below.
 
 1. Setup Environment
 2. Run Application
 3. Update Code
+4. Architecture
 
 
 ### 1. Setup Environment
