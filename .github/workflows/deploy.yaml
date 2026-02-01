@@ -31,7 +31,7 @@ jobs:
       AWS_REGION: us-east-1
       S3_BUCKET: ${{ vars.UI_PUBLIC_BUCKET_NAME }}
       API_BASE_URL: ${{ vars.API_BASE_URL }}
-      DOMAIN_BASE_URL: ${{ vars.DOMAIN_BASE_URL }}
+      UI_BASE_URL: ${{ vars.UI_BASE_URL }}
       COGNITO_USER_POOL_ID: ${{ secrets.COGNITO_USER_POOL_ID }}
       COGNITO_APP_CLIENT_ID: ${{ secrets.COGNITO_APP_CLIENT_ID }}
 
@@ -71,7 +71,7 @@ jobs:
         run: |
           flutter build web --release \
             --dart-define=API_BASE_URL=${API_BASE_URL} \
-            --dart-define=DOMAIN_BASE_URL=${DOMAIN_BASE_URL}
+            --dart-define=UI_BASE_URL=${UI_BASE_URL}
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4

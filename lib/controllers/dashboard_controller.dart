@@ -108,7 +108,7 @@ class DashboardController {
 
   /// Copies the provided scheduling link to the system clipboard.
   static Future<void> copySchedulingLinkToClipboard(String link) async {
-    await Clipboard.setData(ClipboardData(text: '${ApiSettings.domainBaseUrl}/schedule-tow/$link'));
+    await Clipboard.setData(ClipboardData(text: '${ApiSettings.uiBaseUrl}/schedule-tow/$link'));
   }
 
   /// Copies the provided location to the system clipboard.
@@ -129,7 +129,7 @@ class DashboardController {
 
   /// Opens the public scheduling page in a new tab/window.
   static Future<void> navigateToSchedulingPage(String link) async {
-    final url = '${ApiSettings.domainBaseUrl}/schedule-tow/$link';
+    final url = '${ApiSettings.uiBaseUrl}/schedule-tow/$link';
     await launchUrlString(url, webOnlyWindowName: '_blank');
   }
 }
