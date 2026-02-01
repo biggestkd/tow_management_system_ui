@@ -1,5 +1,8 @@
 # Change Log
 
+## 0.7.1
+* Changed domainBaseUrl env var to uiBaseUrl for web
+
 ## 0.7.0
 * Add GHA and AWS resources for deployments. 
 

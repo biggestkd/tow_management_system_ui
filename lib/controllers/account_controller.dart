@@ -171,8 +171,8 @@ class AccountController {
         return;
       }
 
-      final returnURL = '${ApiSettings.domainBaseUrl}/dashboard';
-      final refreshURL = '${ApiSettings.domainBaseUrl}/';
+      final returnURL = '${ApiSettings.uiBaseUrl}/dashboard';
+      final refreshURL = '${ApiSettings.uiBaseUrl}/';
 
       final url = await PaymentsAPI.postPaymentAccount(
         companyId,

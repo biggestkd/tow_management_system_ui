@@ -45,7 +45,7 @@ class SchedulingLinkSection extends StatelessWidget {
                 Expanded(
                   child: TextField(
                     readOnly: true,
-                    controller: TextEditingController(text: '${ApiSettings.domainBaseUrl}/schedule-tow/$link'),
+                    controller: TextEditingController(text: '${ApiSettings.uiBaseUrl}/schedule-tow/$link'),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
