@@ -1,5 +1,6 @@
 // lib/screens/onboarding/step_auth.dart
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../utilities/validator.dart';
 
 class StepAuth extends StatelessWidget {
@@ -75,7 +76,14 @@ class StepAuth extends StatelessWidget {
           textInputAction: TextInputAction.done,
           validator: (v) => validatePassword(v, min: 2),
         ),
-        const SizedBox(height: 48),
+        const SizedBox(height: 24),
+        Center(
+          child: TextButton(
+            onPressed: () => context.go('/login'),
+            child: const Text('Already have an account? Sign in'),
+          ),
+        ),
+        const SizedBox(height: 24),
 
         // Footer actions
         Padding(
