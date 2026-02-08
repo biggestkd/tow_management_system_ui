@@ -3,11 +3,13 @@ import 'package:tow_management_system_ui/views/dashboard/dashboard_screen.dart';
 import 'package:tow_management_system_ui/views/login/login_screen.dart';
 import 'package:tow_management_system_ui/views/account/account_screen.dart';
 import 'package:tow_management_system_ui/views/scheduling/schedule_tow_screen.dart';
+import 'package:tow_management_system_ui/views/auth_resolver_screen.dart';
 import '../views/onboarding/onboarding_screen.dart';
 
 final router = GoRouter(
-  initialLocation: '/onboarding',
+  initialLocation: '/',
   routes: [
+    GoRoute(path: '/', builder: (_, __) => const AuthResolverScreen()),
     GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
     GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
     GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
