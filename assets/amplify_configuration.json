@@ -9,9 +9,9 @@
         },
         "CognitoUserPool": {
           "Default": {
-            "PoolId": "__COGNITO_USER_POOL_ID__",
-            "AppClientId": "__COGNITO_APP_CLIENT_ID__",
-            "Region": "__AWS_REGION__"
+            "PoolId": "us-east-1_1vKKg6HAL",
+            "AppClientId": "4bfpmsnu362vdsc3hspccogadk",
+            "Region": "us-east-1"
           }
         },
         "Auth": {
