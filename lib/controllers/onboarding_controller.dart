@@ -63,8 +63,9 @@ class OnboardingController {
     final user = User(id: userId, companyId: createdCompany?.id);
     
     // Update user with company id
-    UserAPI.updateUser(user);
-    
+    await UserAPI.updateUser(user);
+
+    return user;
   }
 
 
