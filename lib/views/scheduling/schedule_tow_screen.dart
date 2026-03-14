@@ -36,6 +36,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
   late TextEditingController _yearController;
   late TextEditingController _makeController;
   late TextEditingController _modelController;
+  late TextEditingController _stateController;
+  late TextEditingController _licensePlateController;
   // driver inputs
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
@@ -64,6 +66,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
     _yearController = TextEditingController();
     _makeController = TextEditingController();
     _modelController = TextEditingController();
+    _stateController = TextEditingController();
+    _licensePlateController = TextEditingController();
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _phoneController = TextEditingController();
@@ -77,6 +81,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
     _yearController.dispose();
     _makeController.dispose();
     _modelController.dispose();
+    _stateController.dispose();
+    _licensePlateController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
     _phoneController.dispose();
@@ -148,6 +154,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               yearController: _yearController,
               makeController: _makeController,
               modelController: _modelController,
+              stateController: _stateController,
+              licensePlateController: _licensePlateController,
             ),
           ],
         );
@@ -193,6 +201,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               _yearController.clear();
               _makeController.clear();
               _modelController.clear();
+              _stateController.clear();
+              _licensePlateController.clear();
               _firstNameController.clear();
               _lastNameController.clear();
               _phoneController.clear();
@@ -326,6 +336,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               year: _yearController.text.trim().isEmpty ? null : _yearController.text.trim(),
               make: _makeController.text.trim().isEmpty ? null : _makeController.text.trim(),
               model: _modelController.text.trim().isEmpty ? null : _modelController.text.trim(),
+              state: _stateController.text.trim().isEmpty ? null : _stateController.text.trim(),
+              plateNumber: _licensePlateController.text.trim().isEmpty ? null : _licensePlateController.text.trim(),
             );
             
             // Build primary contact object

@@ -67,6 +67,12 @@ class TowController {
       return false;
     }
   }
+
+  /// Share call with driver. Placeholder for future implementation.
+  static Future<void> shareCallWithDriver(String? towId) async {}
+
+  /// Send link to customer. Placeholder for future implementation.
+  static Future<void> sendLinkToCustomer(String? towId) async {}
 }
 
 

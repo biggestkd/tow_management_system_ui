@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/tow_controller.dart';
+
 class TowCard extends StatelessWidget {
   const TowCard({
     super.key,
@@ -7,6 +9,7 @@ class TowCard extends StatelessWidget {
     required this.createdAt,
     this.price,
     this.onEditPressed,
+    this.towId,
 
     required this.pickupLocation,
     required this.dropOffLocation,
@@ -19,12 +22,54 @@ class TowCard extends StatelessWidget {
   final DateTime createdAt;
   final int? price;
   final VoidCallback? onEditPressed;
+  final String? towId;
 
   final String pickupLocation;
   final String dropOffLocation;
   final String vehicle;
   final String driverName;
   final String? driverPhone;
+
+  void _onLongPress(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Share tow',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: () {
+                  TowController.sendLinkToCustomer(towId);
+                  Navigator.of(sheetContext).pop();
+                },
+                icon: const Icon(Icons.link),
+                label: const Text('Send to Customer'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () {
+                  TowController.shareCallWithDriver(towId);
+                  Navigator.of(sheetContext).pop();
+                },
+                icon: const Icon(Icons.share),
+                label: const Text('Share with Driver'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   bool get _isActive => status.toLowerCase() == 'active';
   bool get _isCompleted => status.toLowerCase() == 'completed';
@@ -47,13 +92,16 @@ class TowCard extends StatelessWidget {
 
     final linkBlue = const Color(0xFF2563EB);
 
-    return Card(
-      elevation: 0,
-      color: Colors.white,
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      shape: border,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
+    return GestureDetector(
+      onTap: onEditPressed,
+      onLongPress: () => _onLongPress(context),
+      child: Card(
+        elevation: 0,
+        color: Colors.white,
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        shape: border,
+        clipBehavior: Clip.antiAlias,
+        child: Column(
         children: [
           Container(
             color: headerBg,
@@ -76,30 +124,13 @@ class TowCard extends StatelessWidget {
                 ),
                 if (price != null) ...[
                   Text(
-                    '\$${price!.toStringAsFixed(2)}',
+                    '\$${(price! / 100).toStringAsFixed(2)}',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: linkBlue,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: 12),
                 ],
-                OutlinedButton.icon(
-                  onPressed: onEditPressed,
-                  icon: const Icon(Icons.visibility, size: 16),
-                  label: const Text('View'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.black87,
-                    side: BorderSide(color: Colors.black.withOpacity(.12)),
-                    backgroundColor: Colors.white,
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    visualDensity: VisualDensity.compact,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -164,6 +195,7 @@ class TowCard extends StatelessWidget {
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -230,11 +262,19 @@ class _LocationColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _DotLabel(label: pickupLabel, color: const Color(0xFF22C55E)), // green
+        _LocationLabel(
+          label: pickupLabel,
+          icon: Icons.location_on_outlined,
+          color: const Color(0xFF2563EB),
+        ),
         const SizedBox(height: 6),
         _ValueText(pickupText),
         const SizedBox(height: 22),
-        _DotLabel(label: dropoffLabel, color: const Color(0xFFEF4444)), // red
+        _LocationLabel(
+          label: dropoffLabel,
+          icon: Icons.flag_outlined,
+          color: const Color(0xFFDC2626),
+        ),
         const SizedBox(height: 6),
         _ValueText(dropoffText),
       ],
@@ -242,9 +282,14 @@ class _LocationColumn extends StatelessWidget {
   }
 }
 
-class _DotLabel extends StatelessWidget {
-  const _DotLabel({required this.label, required this.color});
+class _LocationLabel extends StatelessWidget {
+  const _LocationLabel({
+    required this.label,
+    required this.icon,
+    required this.color,
+  });
   final String label;
+  final IconData icon;
   final Color color;
 
   @override
@@ -255,7 +300,7 @@ class _DotLabel extends StatelessWidget {
     );
     return Row(
       children: [
-        Icon(Icons.circle, size: 9, color: color),
+        Icon(icon, size: 20, color: color),
         const SizedBox(width: 8),
         Text(label, style: style),
       ],

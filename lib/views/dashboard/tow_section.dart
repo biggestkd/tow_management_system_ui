@@ -75,6 +75,7 @@ class _TowsSectionState extends State<TowsSection> {
             itemBuilder: (context, i) {
               final tow = widget.towHistory[i];
               return TowCard(
+                towId: tow.id,
                 status: tow.status ?? '',
                 createdAt: tow.createdAtDate ?? DateTime.now(),
                 price: tow.price,
