@@ -44,12 +44,14 @@ class LocationsSectionInput extends StatelessWidget {
             label: 'Pickup',
             controller: pickupController,
             icon: Icons.location_on_outlined,
+            iconColor: const Color(0xFF2563EB),
           ),
           const SizedBox(height: 12),
           _LocationField(
             label: 'Destination',
             controller: destinationController,
             icon: Icons.flag_outlined,
+            iconColor: const Color(0xFFDC2626),
           ),
         ],
       ),
@@ -62,11 +64,13 @@ class _LocationField extends StatefulWidget {
     required this.label,
     required this.controller,
     required this.icon,
+    required this.iconColor,
   });
 
   final String label;
   final TextEditingController controller;
   final IconData icon;
+  final Color iconColor;
 
   @override
   State<_LocationField> createState() => _LocationFieldState();
@@ -168,7 +172,7 @@ class _LocationFieldState extends State<_LocationField> {
                         leading: Icon(
                           widget.icon,
                           size: 18,
-                          color: theme.colorScheme.primary,
+                          color: widget.iconColor,
                         ),
                         title: Text(
                           suggestion,
@@ -238,7 +242,7 @@ class _LocationFieldState extends State<_LocationField> {
                       Icon(
                         widget.icon,
                         size: 20,
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: widget.iconColor,
                       ),
                       const SizedBox(width: 12),
                       Expanded(

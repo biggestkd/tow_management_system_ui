@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/tow.dart';
 
 class VehicleSection extends StatefulWidget {
@@ -163,7 +164,7 @@ class _VehicleSectionState extends State<VehicleSection> {
                       widget.yearController.text = value ?? '';
                     });
                   },
-                  enabled: false, // Read-only, but uses controller for future editability
+                  enabled: true,
                 ),
               ),
               _vDivider(theme),
@@ -179,7 +180,7 @@ class _VehicleSectionState extends State<VehicleSection> {
                       widget.modelController.text = '';
                     });
                   },
-                  enabled: false, // Read-only, but uses controller for future editability
+                  enabled: true,
                 ),
               ),
               _vDivider(theme),
@@ -193,7 +194,7 @@ class _VehicleSectionState extends State<VehicleSection> {
                       widget.modelController.text = value ?? '';
                     });
                   },
-                  enabled: false, // Read-only, but uses controller for future editability
+                  enabled: true,
                 ),
               ),
             ],
@@ -213,7 +214,7 @@ class _VehicleSectionState extends State<VehicleSection> {
                       widget.stateController.text = value ?? '';
                     });
                   },
-                  enabled: false, // Read-only, but uses controller for future editability
+                  enabled: true,
                 ),
               ),
               const SizedBox(width: 16),
@@ -222,7 +223,15 @@ class _VehicleSectionState extends State<VehicleSection> {
                   label: 'License Plate',
                   controller: widget.plateNumberController,
                   onChanged: (value) {},
-                  readOnly: true, // Read-only, but uses controller for future editability
+                  readOnly: false,
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                    TextInputFormatter.withFunction((oldValue, newValue) => TextEditingValue(
+                      text: newValue.text.toUpperCase(),
+                      selection: newValue.selection,
+                    )),
+                  ],
                 ),
               ),
             ],
@@ -317,12 +326,16 @@ class _VehicleTextField extends StatelessWidget {
     required this.controller,
     required this.onChanged,
     this.readOnly = false,
+    this.textCapitalization = TextCapitalization.none,
+    this.inputFormatters,
   });
 
   final String label;
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
   final bool readOnly;
+  final TextCapitalization textCapitalization;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -343,6 +356,8 @@ class _VehicleTextField extends StatelessWidget {
           controller: controller,
           readOnly: readOnly,
           onChanged: onChanged,
+          textCapitalization: textCapitalization,
+          inputFormatters: inputFormatters,
           style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           decoration: InputDecoration(
             filled: true,

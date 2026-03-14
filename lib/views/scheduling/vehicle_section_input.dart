@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class VehicleSectionInput extends StatefulWidget {
   const VehicleSectionInput({
@@ -6,11 +7,15 @@ class VehicleSectionInput extends StatefulWidget {
     required this.yearController,
     required this.makeController,
     required this.modelController,
+    required this.stateController,
+    required this.licensePlateController,
   });
 
   final TextEditingController yearController;
   final TextEditingController makeController;
   final TextEditingController modelController;
+  final TextEditingController stateController;
+  final TextEditingController licensePlateController;
 
   @override
   State<VehicleSectionInput> createState() => _VehicleSectionInputState();
@@ -88,16 +93,13 @@ class _VehicleSectionInputState extends State<VehicleSectionInput> {
     return List.of(models); // copy for safety
   }
 
-  // Get list of all 50 US states
-  List<String> _getStates() {
+  // Get list of all 50 US states as 2-character abbreviations (USPS)
+  List<String> _getStateAbbreviations() {
     return [
-      'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',
-      'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',
-      'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi',
-      'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico',
-      'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania',
-      'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont',
-      'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'District of Columbia'
+      'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA',
+      'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+      'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT',
+      'VA', 'WA', 'WV', 'WI', 'WY', 'DC',
     ];
   }
 
@@ -113,8 +115,10 @@ class _VehicleSectionInputState extends State<VehicleSectionInput> {
     final currentYear = _sanitize(widget.yearController.text);
     final currentMake = _sanitize(widget.makeController.text);
     final currentModel = _sanitize(widget.modelController.text);
+    final currentState = _sanitize(widget.stateController.text);
 
     final models = currentMake == null ? <String>[] : _getModelsForMake(currentMake);
+    final stateAbbreviations = _getStateAbbreviations();
 
     return Container(
       width: double.infinity,
@@ -189,6 +193,39 @@ class _VehicleSectionInputState extends State<VehicleSectionInput> {
             ],
           ),
           const SizedBox(height: 16),
+          // State and License Plate row
+          Row(
+            children: [
+              Expanded(
+                child: _VehicleDropdownField(
+                  label: 'State',
+                  value: currentState,
+                  items: stateAbbreviations,
+                  onChanged: (value) {
+                    setState(() {
+                      widget.stateController.text = value ?? '';
+                    });
+                  },
+                ),
+              ),
+              _vDivider(theme),
+              Expanded(
+                child: _VehicleTextField(
+                  label: 'License Plate',
+                  controller: widget.licensePlateController,
+                  textCapitalization: TextCapitalization.characters,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9]')),
+                    TextInputFormatter.withFunction((oldValue, newValue) => TextEditingValue(
+                      text: newValue.text.toUpperCase(),
+                      selection: newValue.selection,
+                    )),
+                  ],
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -276,11 +313,15 @@ class _VehicleTextField extends StatelessWidget {
     required this.label,
     required this.controller,
     required this.onChanged,
+    this.textCapitalization = TextCapitalization.none,
+    this.inputFormatters,
   });
 
   final String label;
   final TextEditingController controller;
   final ValueChanged<String> onChanged;
+  final TextCapitalization textCapitalization;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -300,6 +341,8 @@ class _VehicleTextField extends StatelessWidget {
         TextField(
           controller: controller,
           onChanged: onChanged,
+          textCapitalization: textCapitalization,
+          inputFormatters: inputFormatters,
           style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
           decoration: InputDecoration(
             filled: true,

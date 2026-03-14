@@ -11,6 +11,7 @@ class Tow {
   final String? notes;
   final List<String>? history;
   final String? status; // pending, accepted, dispatched, arrived_pickup, in_transit, completed, cancelled
+  final String? checkoutUrl;
   final String? companyId;
   final int? createdAt; // Unix timestamp (int64 in Go)
   final int? price;
@@ -25,6 +26,7 @@ class Tow {
     this.notes,
     this.history,
     this.status,
+    this.checkoutUrl,
     this.companyId,
     this.createdAt,
     this.price,
@@ -47,6 +49,7 @@ class Tow {
           ? List<String>.from(json['history'])
           : [],
       status: json['status'],
+      checkoutUrl: json['checkoutUrl'],
       companyId: json['companyId'],
       createdAt: json['createdAt'] is int
           ? json['createdAt']
@@ -67,6 +70,7 @@ class Tow {
     if (notes != null) 'notes': notes,
     if (history != null) 'history': history,
     if (status != null) 'status': status,
+    if (checkoutUrl != null) 'checkoutUrl': checkoutUrl,
     if (companyId != null) 'companyId': companyId,
     if (createdAt != null) 'createdAt': createdAt,
     if (price != null) 'price': price,

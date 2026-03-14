@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import '../../models/tow.dart';
 import '../../controllers/dashboard_controller.dart';
+import '../../services/location_api.dart';
 
 class LocationsSection extends StatelessWidget {
   const LocationsSection({
@@ -41,12 +43,14 @@ class LocationsSection extends StatelessWidget {
             label: 'Pickup',
             controller: pickupController,
             icon: Icons.location_on_outlined,
+            iconColor: const Color(0xFF2563EB),
           ),
           const SizedBox(height: 12),
           _LocationField(
             label: 'Destination',
             controller: destinationController,
             icon: Icons.flag_outlined,
+            iconColor: const Color(0xFFDC2626),
           ),
         ],
       ),
@@ -59,17 +63,26 @@ class _LocationField extends StatefulWidget {
     required this.label,
     required this.controller,
     required this.icon,
+    required this.iconColor,
   });
 
   final String label;
   final TextEditingController controller;
   final IconData icon;
+  final Color iconColor;
 
   @override
   State<_LocationField> createState() => _LocationFieldState();
 }
 
 class _LocationFieldState extends State<_LocationField> {
+  final LayerLink _layerLink = LayerLink();
+  OverlayEntry? _overlayEntry;
+  List<String> _suggestions = [];
+  Timer? _debounce;
+
+  bool get _isOpen => _overlayEntry != null;
+
   @override
   void initState() {
     super.initState();
@@ -79,11 +92,111 @@ class _LocationFieldState extends State<_LocationField> {
   @override
   void dispose() {
     widget.controller.removeListener(_onControllerChanged);
+    _removeOverlay();
+    _debounce?.cancel();
     super.dispose();
   }
 
   void _onControllerChanged() {
-    setState(() {});
+    if (mounted) setState(() {});
+  }
+
+  void _onTextChanged(String value) {
+    _debounce?.cancel();
+
+    if (value.trim().isEmpty) {
+      _suggestions = [];
+      _removeOverlay();
+      return;
+    }
+
+    _debounce = Timer(const Duration(milliseconds: 300), () async {
+      final results = await LocationAPI.getAddresses(value.trim());
+
+      if (!mounted) return;
+
+      setState(() {
+        _suggestions = results;
+      });
+
+      if (_suggestions.isNotEmpty) {
+        _showOverlay();
+      } else {
+        _removeOverlay();
+      }
+    });
+  }
+
+  void _showOverlay() {
+    if (_isOpen) {
+      _overlayEntry!.markNeedsBuild();
+      return;
+    }
+
+    _overlayEntry = OverlayEntry(
+      builder: (context) {
+        final theme = Theme.of(context);
+
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _removeOverlay,
+              ),
+            ),
+            CompositedTransformFollower(
+              link: _layerLink,
+              showWhenUnlinked: false,
+              offset: const Offset(0, 50),
+              child: Material(
+                elevation: 6,
+                borderRadius: BorderRadius.circular(12),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 420,
+                    maxHeight: 240,
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _suggestions.length,
+                    itemBuilder: (_, index) {
+                      final suggestion = _suggestions[index];
+                      return ListTile(
+                        dense: true,
+                        leading: Icon(
+                          widget.icon,
+                          size: 18,
+                          color: widget.iconColor,
+                        ),
+                        title: Text(
+                          suggestion,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onTap: () {
+                          widget.controller.text = suggestion;
+                          _removeOverlay();
+                          FocusScope.of(context).unfocus();
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    Overlay.of(context, debugRequiredFor: widget)!.insert(_overlayEntry!);
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
   }
 
   @override
@@ -94,7 +207,6 @@ class _LocationFieldState extends State<_LocationField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Label above the field
         Text(
           widget.label,
           style: theme.textTheme.bodySmall?.copyWith(
@@ -103,59 +215,57 @@ class _LocationFieldState extends State<_LocationField> {
           ),
         ),
         const SizedBox(height: 8),
-        // Row with white container and action icons
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // White input-like container
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: theme.dividerColor.withOpacity(0.2),
-                    width: 1,
+              child: CompositedTransformTarget(
+                link: _layerLink,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: theme.dividerColor.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    // Left icon
-                    Icon(
-                      widget.icon,
-                      size: 20,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 12),
-                    // Location text field (read-only, but uses controller for future editability)
-                    Expanded(
-                      child: TextField(
-                        controller: widget.controller,
-                        readOnly: true,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'Optional',
-                          hintStyle: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onSurfaceVariant,
-                            fontStyle: FontStyle.italic,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                          isDense: true,
-                        ),
-                        maxLines: 1,
-                        textInputAction: TextInputAction.next,
+                  child: Row(
+                    children: [
+                      Icon(
+                        widget.icon,
+                        size: 20,
+                        color: widget.iconColor,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: widget.controller,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: 'Optional',
+                            hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
+                          ),
+                          maxLines: 1,
+                          textInputAction: TextInputAction.next,
+                          onChanged: _onTextChanged,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            // Copy icon button (outside white container)
             IconButton(
               icon: Icon(
                 Icons.copy_outlined,
@@ -177,4 +287,3 @@ class _LocationFieldState extends State<_LocationField> {
     );
   }
 }
-
