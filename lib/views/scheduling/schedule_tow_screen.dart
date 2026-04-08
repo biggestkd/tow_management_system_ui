@@ -53,6 +53,10 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
   String? _lastNameError;
   String? _phoneError;
   String? _emailError;
+
+  // SMS consent
+  bool _smsConsentChecked = false;
+  bool _smsConsentError = false;
   
   // Submission result
   bool? _submissionSuccess;
@@ -182,6 +186,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               phoneError: _phoneError,
               emailError: _emailError,
             ),
+            const SizedBox(height: 16),
+            _buildSmsConsentCheckbox(),
           ],
         );
 
@@ -211,6 +217,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               _lastNameError = null;
               _phoneError = null;
               _emailError = null;
+              _smsConsentChecked = false;
+              _smsConsentError = false;
               total = 0;
               estimate = null;
             });
@@ -275,6 +283,7 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               _lastNameError = null;
               _phoneError = null;
               _emailError = null;
+              _smsConsentError = false;
             });
             _goToStep(1);
           },
@@ -319,10 +328,15 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
               isValid = false;
             }
             
+            // Validate SMS consent
+            if (!_smsConsentChecked) {
+              isValid = false;
+            }
+
             // Update state to show errors if validation failed
             if (!isValid) {
               setState(() {
-                // Errors are already set above
+                _smsConsentError = !_smsConsentChecked;
               });
               debugPrint('Validation failed - missing required fields');
               return;
@@ -383,6 +397,56 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  Widget _buildSmsConsentCheckbox() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Checkbox(
+              value: _smsConsentChecked,
+              isError: _smsConsentError,
+              onChanged: (value) {
+                setState(() {
+                  _smsConsentChecked = value ?? false;
+                  if (_smsConsentChecked) _smsConsentError = false;
+                });
+              },
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(
+                  'Get text updates about your service (driver status, ETAs, and notifications). '
+                  'Message & data rates may apply. Reply STOP to opt out.\n\n'
+                  'By checking this box, you agree to receive SMS messages. See Terms & Privacy.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: _smsConsentError
+                        ? Theme.of(context).colorScheme.error
+                        : Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        if (_smsConsentError)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 4),
+            child: Text(
+              'You must agree to receive SMS messages to continue.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ),
+      ],
+    );
   }
 
   void _goToStep(int step) {
