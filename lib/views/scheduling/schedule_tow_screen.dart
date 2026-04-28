@@ -1,5 +1,7 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:tow_management_system_ui/views/scheduling/vehicle_section_input.dart';
 import '../../models/tow.dart';
 import '../../models/vehicle.dart';
@@ -57,6 +59,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
   // SMS consent
   bool _smsConsentChecked = false;
   bool _smsConsentError = false;
+  late final TapGestureRecognizer _termsOfServiceTap;
+  late final TapGestureRecognizer _privacyPolicyTap;
   
   // Submission result
   bool? _submissionSuccess;
@@ -76,6 +80,14 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
     _lastNameController = TextEditingController();
     _phoneController = TextEditingController();
     _emailController = TextEditingController();
+    _termsOfServiceTap = TapGestureRecognizer()
+      ..onTap = () {
+        launchUrlString('https://garageassist.co/terms-of-service');
+      };
+    _privacyPolicyTap = TapGestureRecognizer()
+      ..onTap = () {
+        launchUrlString('https://garageassist.co/privacy-policy');
+      };
   }
 
   @override
@@ -91,6 +103,8 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
     _lastNameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
+    _termsOfServiceTap.dispose();
+    _privacyPolicyTap.dispose();
     super.dispose();
   }
 
@@ -419,17 +433,7 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  'Get text updates about your service (driver status, ETAs, and notifications). '
-                  'Message & data rates may apply. Reply STOP to opt out.\n\n'
-                  'By checking this box, you agree to receive SMS messages. See Terms & Privacy.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: _smsConsentError
-                        ? Theme.of(context).colorScheme.error
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
+                child: _buildSmsConsentRichText(context),
               ),
             ),
           ],
@@ -446,6 +450,49 @@ class _ScheduleTowScreenState extends State<ScheduleTowScreen> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildSmsConsentRichText(BuildContext context) {
+    final theme = Theme.of(context);
+    final baseColor = _smsConsentError
+        ? theme.colorScheme.error
+        : theme.colorScheme.onSurface;
+    final baseStyle = TextStyle(
+      fontSize: 13,
+      color: baseColor,
+    );
+    final linkColor = _smsConsentError
+        ? theme.colorScheme.error
+        : theme.colorScheme.primary;
+    final linkStyle = baseStyle.copyWith(
+      color: linkColor,
+      decoration: TextDecoration.underline,
+      decorationColor: linkColor,
+    );
+
+    return RichText(
+      text: TextSpan(
+        style: baseStyle,
+        children: [
+          const TextSpan(
+            text:
+                'By checking this box, you agree to receive SMS messages about your service and our ',
+          ),
+          TextSpan(
+            text: 'Terms of Service',
+            style: linkStyle,
+            recognizer: _termsOfServiceTap,
+          ),
+          const TextSpan(text: '. Message & data rates may apply. See our '),
+          TextSpan(
+            text: 'Privacy Policy',
+            style: linkStyle,
+            recognizer: _privacyPolicyTap,
+          ),
+          const TextSpan(text: '.'),
+        ],
+      ),
     );
   }
 
